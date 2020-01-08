@@ -1,0 +1,34 @@
+module TrackerServer
+{
+	struct NetworkInfo
+	{
+		long fragmentSize;
+		TorrentServerAddresses torrentServer;
+	};
+
+	struct FragmentInfo
+	{
+		long sequenceNumber;
+		string fragmentHash;
+		string fileHash;
+	};
+
+	struct FileInfo
+	{
+		long size;
+		string hash;
+	};
+
+	typedef sequence<char> Data;
+
+	enum UploadStatus { Initiated, Pending, Canceled, Validating, Distributing, Distributed };
+
+	interface ITrackerServer
+	{
+		NetworkInfo GetNetworkInfo();
+		TorrentServerAddresses GetTorrentServerAddresses()
+		UploadStatus GetUploadStatus(in string fileHash);
+		void InitiateUpload(in long size, in string hash);
+		void UploadFragment(in FragmentInfo info, in Data fragment);
+	};
+};
