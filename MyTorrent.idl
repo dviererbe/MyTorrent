@@ -3,7 +3,7 @@ module TrackerServer
 	struct NetworkInfo
 	{
 		long fragmentSize;
-		TorrentServerAddresses torrentServer;
+		sequence<string> torrentServer;
 	};
 
 	struct FragmentInfo
@@ -26,7 +26,6 @@ module TrackerServer
 	interface ITrackerServer
 	{
 		NetworkInfo GetNetworkInfo();
-		TorrentServerAddresses GetTorrentServerAddresses()
 		UploadStatus GetUploadStatus(in string fileHash);
 		void InitiateUpload(in long size, in string hash);
 		void UploadFragment(in FragmentInfo info, in Data fragment);
