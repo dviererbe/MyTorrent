@@ -12,49 +12,54 @@ message NetworkInfoRequest
 
 message NetworkInfoResponse
 {
-    int64 FragmentSize;
-    repeated string TorrentServer;
+    int64 FragmentSize = 1;
+    repeated string TorrentServer = 2;
 }
 
 message UploadStatusRequest
 {
-    string FileHash;
+    string FileHash = 1;
 }
 
 enum UploadStatus {
-    Initiated, 
-    Uploading, 
-    Canceled, 
-    Validating, 
-    Distributing, 
-    Distributed
+    Initiated = 0;
+    Uploading = 1;
+    Canceled = 2;
+    Validating = 3;
+    Distributing = 4;
+    Distributed = 5;
 }
 
 message UploadStatusResponse
 {
-    UploadStatus Status;
-}
-
-message FileUploadRequest
-{
-    string FileHash;
-    int64 FileSize;
+    UploadStatus Status = 1;
 }
 
 message FileFragment
 {
-    string FragmentHash;
-    repeated byte Data;
+    string FragmentHash = 1;
+    bytes Data = 2;
+}
+
+message FileUploadInitiationRequest
+{
+    string FileHash = 1;
+    int64 FileSize = 2;
+}
+
+message FileUploadInitiationResponse
+{
 }
 
 message FileUploadResponse
 {
-    repeated string InitialFragmentHolder;
+    repeated string InitialFragmentHolder = 1;
 }
 
 service TrackerService
 {
     rpc GetNetworkInfo(NetworkInfoRequest) returns (NetworkInfoResponse);
     rpc GetUploadStatus(UploadStatusRequest) returns (UploadStatusResponse);
-    rpc UploadFile(FileUploadRequest, stream FileFragment) returns FileUploadResponse;
+    rpc InitiateUpload(FileUploadInitiationRequest) returns (FileUploadInitiationResponse);
+	rpc UploadFileFragments(stream FileFragment) returns (FileUploadResponse);
 }
