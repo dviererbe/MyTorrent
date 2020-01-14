@@ -1,0 +1,60 @@
+syntax="proto3"
+
+package MyTorrent;
+
+option java_multiple_files = true;
+option java_package = "mytorrent.grpc.helloworld";
+option java_outer_classname = "HelloWorldProto";
+
+message NetworkInfoRequest
+{
+}
+
+message NetworkInfoResponse
+{
+    int64 FragmentSize;
+    repeated string TorrentServer;
+}
+
+message UploadStatusRequest
+{
+    string FileHash;
+}
+
+enum UploadStatus {
+    Initiated, 
+    Uploading, 
+    Canceled, 
+    Validating, 
+    Distributing, 
+    Distributed
+}
+
+message UploadStatusResponse
+{
+    UploadStatus Status;
+}
+
+message FileUploadRequest
+{
+    string FileHash;
+    int64 FileSize;
+}
+
+message FileFragment
+{
+    string FragmentHash;
+    repeated byte Data;
+}
+
+message FileUploadResponse
+{
+    repeated string InitialFragmentHolder;
+}
+
+service TrackerService
+{
+    rpc GetNetworkInfo(NetworkInfoRequest) returns (NetworkInfoResponse);
+    rpc GetUploadStatus(UploadStatusRequest) returns (UploadStatusResponse);
+    rpc UploadFile(FileUploadRequest, stream FileFragment) returns FileUploadResponse;
+}
