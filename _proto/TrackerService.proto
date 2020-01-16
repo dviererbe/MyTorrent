@@ -13,7 +13,8 @@ message NetworkInfoRequest
 message NetworkInfoResponse
 {
     int64 FragmentSize = 1;
-    repeated string TorrentServer = 2;
+	string HashAlgorithm = 2;
+    repeated string TorrentServer = 3;
 }
 
 message UploadStatusRequest
@@ -22,12 +23,13 @@ message UploadStatusRequest
 }
 
 enum UploadStatus {
-    Initiated = 0; //
-    Uploading = 1;
-    Canceled = 2;
-    Validating = 3;
-    Distributing = 4;
-    Distributed = 5;
+    Initiated = 0;		//File Upload was initiated. No fragment was uploaded so far.
+    Uploading = 1;		//File ist uploading. Some fragments have already arrived.
+    Canceled = 2;		//File Upload was canceled for some reason.
+    Validating = 3;     //All fragments are uploaded, but the Server still validating the data before distributing it. 
+    Distributing = 4;	//The fragments are currently distributed to the torrent servers.
+    Distributed = 5;	//All fragments are distributed to the torrent servers.
+	Unknown = 6;		//File is Unknown.
 }
 
 message UploadStatusResponse
