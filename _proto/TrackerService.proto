@@ -39,8 +39,9 @@ message UploadStatusResponse
 
 message FileFragment
 {
-    string FragmentHash = 1;
-    bytes Data = 2;
+	string FileHash = 1;
+    string FragmentHash = 2;
+    bytes Data = 3;
 }
 
 message FileUploadInitiationRequest
@@ -53,9 +54,14 @@ message FileUploadInitiationResponse
 {
 }
 
+message FragmentHolderList
+{
+	repeated string EndPoints = 1;
+}
+
 message FileUploadResponse
 {
-    repeated string InitialFragmentHolder = 1;
+    map<string, FragmentHolderList> FragmentDistribution = 1;
 }
 
 service TrackerService
