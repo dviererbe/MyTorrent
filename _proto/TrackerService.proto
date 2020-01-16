@@ -3,8 +3,8 @@ syntax="proto3";
 package MyTorrent;
 
 option java_multiple_files = true;
-option java_package = "mytorrent.grpc.helloworld";
-option java_outer_classname = "HelloWorldProto";
+option java_package = "mytorrent.grpc.trackerservice";
+option java_outer_classname = "TrackerServiceProto";
 
 message NetworkInfoRequest
 {
@@ -22,7 +22,7 @@ message UploadStatusRequest
 }
 
 enum UploadStatus {
-    Initiated = 0;
+    Initiated = 0; //
     Uploading = 1;
     Canceled = 2;
     Validating = 3;
