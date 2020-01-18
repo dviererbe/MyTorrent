@@ -1,0 +1,2 @@
+obj\Debug\netstandard2.0/MyTorrent.cs \
+obj\Debug\netstandard2.0/MyTorrentGrpc.cs: ../_proto/MyTorrent.proto

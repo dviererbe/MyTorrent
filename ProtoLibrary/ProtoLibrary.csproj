@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="../_proto/TrackerService.proto" Link="TrackerService.proto" />
+    <Protobuf Include="../_proto/MyTorrent.proto" Link="MyTorrent.proto" />
   </ItemGroup>
   
 </Project>
