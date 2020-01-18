@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>  
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.8.0" />
+    <PackageReference Include="Grpc" Version="2.23.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.23.0" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="../_proto/TrackerService.proto" Link="TrackerService.proto" />
+  </ItemGroup>
+  
+</Project>

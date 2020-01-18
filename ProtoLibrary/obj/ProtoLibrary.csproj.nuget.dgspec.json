@@ -1,0 +1,77 @@
+{
+  "format": 1,
+  "restore": {
+    "D:\\Organisation\\HSHARZ\\7. Semester\\RKM\\MyTorrent\\ProtoLibrary\\ProtoLibrary.csproj": {}
+  },
+  "projects": {
+    "D:\\Organisation\\HSHARZ\\7. Semester\\RKM\\MyTorrent\\ProtoLibrary\\ProtoLibrary.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Organisation\\HSHARZ\\7. Semester\\RKM\\MyTorrent\\ProtoLibrary\\ProtoLibrary.csproj",
+        "projectName": "ProtoLibrary",
+        "projectPath": "D:\\Organisation\\HSHARZ\\7. Semester\\RKM\\MyTorrent\\ProtoLibrary\\ProtoLibrary.csproj",
+        "packagesPath": "C:\\Users\\Dirk Neumann\\.nuget\\packages\\",
+        "outputPath": "D:\\Organisation\\HSHARZ\\7. Semester\\RKM\\MyTorrent\\ProtoLibrary\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\Dirk Neumann\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "netstandard2.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netstandard2.0": {
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netstandard2.0": {
+          "dependencies": {
+            "Google.Protobuf": {
+              "target": "Package",
+              "version": "[3.8.0, )"
+            },
+            "Grpc": {
+              "target": "Package",
+              "version": "[2.23.0, )"
+            },
+            "Grpc.Tools": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[2.23.0, )"
+            },
+            "NETStandard.Library": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[2.0.3, )",
+              "autoReferenced": true
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.100\\RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

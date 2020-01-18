@@ -1,0 +1,2 @@
+obj\Debug/TrackerService.cs \
+obj\Debug/TrackerServiceGrpc.cs: ../_proto/TrackerService.proto

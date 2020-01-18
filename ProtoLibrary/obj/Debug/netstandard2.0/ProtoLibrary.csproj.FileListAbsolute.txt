@@ -1,0 +1,8 @@
+D:\Organisation\HSHARZ\7. Semester\RKM\MyTorrent\ProtoLibrary\bin\Debug\netstandard2.0\ProtoLibrary.deps.json
+D:\Organisation\HSHARZ\7. Semester\RKM\MyTorrent\ProtoLibrary\bin\Debug\netstandard2.0\ProtoLibrary.dll
+D:\Organisation\HSHARZ\7. Semester\RKM\MyTorrent\ProtoLibrary\bin\Debug\netstandard2.0\ProtoLibrary.pdb
+D:\Organisation\HSHARZ\7. Semester\RKM\MyTorrent\ProtoLibrary\obj\Debug\netstandard2.0\ProtoLibrary.AssemblyInfoInputs.cache
+D:\Organisation\HSHARZ\7. Semester\RKM\MyTorrent\ProtoLibrary\obj\Debug\netstandard2.0\ProtoLibrary.AssemblyInfo.cs
+D:\Organisation\HSHARZ\7. Semester\RKM\MyTorrent\ProtoLibrary\obj\Debug\netstandard2.0\ProtoLibrary.dll
+D:\Organisation\HSHARZ\7. Semester\RKM\MyTorrent\ProtoLibrary\obj\Debug\netstandard2.0\ProtoLibrary.pdb
+D:\Organisation\HSHARZ\7. Semester\RKM\MyTorrent\ProtoLibrary\obj\Debug\netstandard2.0\ProtoLibrary.csprojAssemblyReference.cache
