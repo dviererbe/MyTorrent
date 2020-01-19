@@ -120,4 +120,7 @@
   <data name="NetworkInfoFileName" xml:space="preserve">
     <value>networkinfo.xml</value>
   </data>
+  <data name="SavedFilesInfoFileName" xml:space="preserve">
+    <value>savedfiles.xml</value>
+  </data>
 </root>

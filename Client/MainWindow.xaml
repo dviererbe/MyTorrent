@@ -13,15 +13,47 @@
 			<ColumnDefinition Width="250"/>
 		</Grid.ColumnDefinitions>
 		<!--Command="{Binding SavePictureToTorrentNetwork}"-->
-		<Image Grid.Column ="0" Source="{Binding Source}"/>
+		<Image Grid.Column ="0" Source="{Binding Source}" Visibility="{Binding ImageVisibility}"/>
+		<Grid Grid.Column ="0" Visibility="{Binding DataGridVisibility}">
+			<DataGrid 
+				ItemsSource="{Binding FileTable}" 
+				CanUserAddRows="False" 
+				CanUserDeleteRows="False" 
+				AutoGenerateColumns="False" 
+				CanUserReorderColumns="True" 
+				CanUserSortColumns="True" 
+				CanUserResizeColumns="True" 
+				CanUserResizeRows="True">
+				<DataGrid.Columns>
+					<DataGridTextColumn Header="Dateiname" Binding="{Binding FileName}" IsReadOnly="True"/>
+					<DataGridTextColumn Header="Uploaddatum" Binding="{Binding CreateTime}" IsReadOnly="True"/>
+					<DataGridCheckBoxColumn Header="Download" Binding="{Binding Download}"/>
+						<DataGridCheckBoxColumn Header="Im Torrentnetz löschen" Binding="{Binding DeleteFromNetwork}"/>
+				</DataGrid.Columns>
+			</DataGrid>
+		</Grid>
 		<StackPanel Grid.Column ="2">
 			<Button Content="Bild laden" Command="{Binding LoadPictureFromFile}"/>
 			<Button Content="TorrentInfos aktualisieren" Click="UpdateNetworkInfo"/>
-			<Button Content="Bild im Torrentnetz speichern" Click="SaveNetworkExecuteAsync"/>			
-			<Button Content="Bild im Torrentnetz finden" Command="{Binding FindPictureInTorrentNetwork}"/>
-			<Button Content="Bild runterladen und zusammen setzen" Command="{Binding LoadAndComposePicture}"/>
+			<Button Content="Bild im Torrentnetz speichern" Click="SaveNetworkExecuteAsync"/>
+			<Button Content="Meine Bilder im Torrentnetz anzeigen" Click="LoadLocalNetworkFileInformation"/>
+			<Button Content="Gewählte Actionen durchführen" Click="DownloadFilesFromTorrentNetwork"/>
 			<Button Content="Bild lokal abspeichern" Command="{Binding SavePictureToFileSystem}"/>
 			<Button Content="Splittest" Command="{Binding SplitTest}"/>
+
+			<!--<ItemsControl ItemsSource="{Binding FileList}">
+			<ItemsControl.ItemTemplate>
+			<DataTemplate>
+			<DataGrid DataContext="{Binding}">
+			<DataGrid.Columns>
+			<DataGridTextColumn Header="Download"/>
+			<DataGridTextColumn Header="Im Torrentnetz löschen"/>
+			</DataGrid.Columns>
+			<CheckBox Content="{Binding FileName}"/>
+			</DataGrid>
+			</DataTemplate>
+			</ItemsControl.ItemTemplate>
+			</ItemsControl>-->
 		</StackPanel>
 	</Grid>
 </Window>

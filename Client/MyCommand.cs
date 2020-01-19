@@ -40,4 +40,22 @@ namespace UserClient
 	public string HashAlgorithm { get; set; }
 	public HashSet<string> TorrentList { get; set; }
   }
+
+  public class SavedFileInfo
+  {
+	public long FileSize { get; set; }
+	public string FileHash { get; set; }
+	public string FileName { get; set; }
+	public DateTime CreateTime { get; set; }
+  }
+
+  public class FileTableItem
+  {
+	public long FileSize { get; set; }
+	public string FileHash { get; set; }
+	public string FileName { get; set; }
+	public DateTime CreateTime { get; set; }
+	public bool Download { get; set; }
+	public bool DeleteFromNetwork { get; set; }
+  }
 }

@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<ArrayOfSavedFileInfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <SavedFileInfo>
+    <FileSize>17970</FileSize>
+    <FileHash>077738822B741D62D7A7C53BD013C7508191DFB58D9D80401A874D224AC1187B</FileHash>
+    <FileName>000.png</FileName>
+    <CreateTime>2020-01-18T12:44:41.3632088+01:00</CreateTime>
+  </SavedFileInfo>
+  <SavedFileInfo>
+    <FileSize>6077315</FileSize>
+    <FileHash>F4D1716797AC56A3E10E2B5EBE4EEBD36B59A9A0A6CADC119B0DCAA3E925C452</FileHash>
+    <FileName>012.jpg</FileName>
+    <CreateTime>2020-01-18T12:45:20.2836192+01:00</CreateTime>
+  </SavedFileInfo>
+  <SavedFileInfo>
+    <FileSize>466867</FileSize>
+    <FileHash>D5CA7AEFA6041CE423E3136FB7FEDC3DC370792E26C3F58013E74B9FB8F8F2D7</FileHash>
+    <FileName>hiding the pain.png</FileName>
+    <CreateTime>2020-01-18T13:20:37.9665689+01:00</CreateTime>
+  </SavedFileInfo>
+</ArrayOfSavedFileInfo>

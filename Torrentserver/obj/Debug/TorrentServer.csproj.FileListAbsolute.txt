@@ -1,0 +1,6 @@
+D:\Organisation\HSHARZ\7. Semester\RKM\MyTorrent\TorrentServer\bin\Debug\TorrentServer.exe.config
+D:\Organisation\HSHARZ\7. Semester\RKM\MyTorrent\TorrentServer\bin\Debug\TorrentServer.exe
+D:\Organisation\HSHARZ\7. Semester\RKM\MyTorrent\TorrentServer\bin\Debug\TorrentServer.pdb
+D:\Organisation\HSHARZ\7. Semester\RKM\MyTorrent\TorrentServer\obj\Debug\TorrentServer.csprojAssemblyReference.cache
+D:\Organisation\HSHARZ\7. Semester\RKM\MyTorrent\TorrentServer\obj\Debug\TorrentServer.exe
+D:\Organisation\HSHARZ\7. Semester\RKM\MyTorrent\TorrentServer\obj\Debug\TorrentServer.pdb

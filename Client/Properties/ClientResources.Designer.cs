@@ -68,5 +68,14 @@ namespace UserClient.Properties {
                 return ResourceManager.GetString("NetworkInfoFileName", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die savedfiles.xml ähnelt.
+        /// </summary>
+        internal static string SavedFilesInfoFileName {
+            get {
+                return ResourceManager.GetString("SavedFilesInfoFileName", resourceCulture);
+            }
+        }
     }
 }

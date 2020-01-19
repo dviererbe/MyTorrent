@@ -25,6 +25,7 @@ using Google.Protobuf.Collections;
 using System.Xml;
 using System.Xml.Serialization;
 using UserClient.Properties;
+using System.Collections.ObjectModel;
 
 namespace UserClient
 {
@@ -34,6 +35,37 @@ namespace UserClient
   public partial class MainWindow : Window, INotifyPropertyChanged
   {
 	public event PropertyChangedEventHandler PropertyChanged;
+
+	static private Random rnd = new Random();
+
+	private ObservableCollection<FileTableItem> fileTable = null;
+	public ObservableCollection<FileTableItem> FileTable
+	{
+	  get => this.fileTable;
+	  set
+	  {
+		if (this.fileTable?.Equals(value) != true)
+		{
+		  this.fileTable = value;
+		  this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.FileTable)));
+		}
+	  }
+	}
+
+	public Visibility ImageVisibility { get; set; } = Visibility.Visible;
+	public Visibility DataGridVisibility { get; set; } = Visibility.Collapsed;
+	public bool IsDataGridVisible
+	{
+	  set
+	  {
+		this.ImageVisibility = value ? Visibility.Collapsed : Visibility.Visible;
+		this.DataGridVisibility = value ? Visibility.Visible : Visibility.Collapsed;
+		this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.ImageVisibility)));
+		this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.DataGridVisibility)));
+	  }
+	}
+
+
 
 	public MyCommand LoadPictureFromFile { get; set; } = null;
 	public MyCommand SavePictureToTorrentNetwork { get; set; } = null;
@@ -58,7 +90,6 @@ namespace UserClient
 		}
 	  }
 	}
-	Bitmap OriginalBitmap { get; set; } = null;
 
 	private MapField<string, MapField<string, FragmentHolderList>> myUploads;
 
@@ -72,7 +103,7 @@ namespace UserClient
 
 	private void InitCommands()
 	{
-	  Predicate<object> pictureLoaded = new Predicate<object>((object obj) => this.OriginalBitmap != null);
+	  Predicate<object> pictureLoaded = new Predicate<object>((object obj) => this.Source != null);
 
 	  this.LoadPictureFromFile = new MyCommand(this.LoadPicture);
 	  //this.SavePictureToTorrentNetwork = new MyCommand(this.SaveNetworkExecuteAsync, pictureLoaded);
@@ -160,6 +191,13 @@ namespace UserClient
 		  await asyncClientStreamingCall.RequestStream.WriteAsync(fileFragment);
 		  Console.WriteLine(counter++);
 		}
+		this.SaveNewFileInfoToList(new SavedFileInfo()
+		{
+		  CreateTime = DateTime.Now,
+		  FileHash = fileHash,
+		  FileName = System.IO.Path.GetFileName(this.Source.UriSource.LocalPath),
+		  FileSize = fileInfo.Length
+		});
 		FileUploadResponse fur = await asyncClientStreamingCall.ResponseAsync;
 		this.myUploads.Add(fileFragment.FileHash, fur.FragmentDistribution);
 	  }
@@ -177,15 +215,10 @@ namespace UserClient
 	  {
 		try
 		{
-		  if (this.OriginalBitmap != null)
-		  {
-			this.OriginalBitmap.Dispose();
-			this.OriginalBitmap = null;
-		  }
 		  Uri uri = new Uri(dialog.FileName);
 		  BitmapImage bmi = new BitmapImage(uri);
-		  this.OriginalBitmap = new Bitmap(dialog.FileName);
 		  this.Source = bmi;
+		  this.IsDataGridVisible = false;
 		}
 		catch (Exception e)
 		{
@@ -194,9 +227,9 @@ namespace UserClient
 		}
 	  }
 	}
-	
 
 
+	#region Save and Load NetworkInfo
 	private NetworkInfo LoadNetworkState()
 	{
 	  NetworkInfo networkInfo;
@@ -204,7 +237,7 @@ namespace UserClient
 	  FileInfo fi = new FileInfo(ClientResources.NetworkInfoFileName);
 	  XmlSerializer serializer = new XmlSerializer(typeof(NetworkInfo));
 	  FileInfo[] d = di.GetFiles();
-	  if (d.Where(x => x.FullName.Equals(fi.FullName,StringComparison.OrdinalIgnoreCase)).Count() == 0)
+	  if (d.Where(x => x.FullName.Equals(fi.FullName, StringComparison.OrdinalIgnoreCase)).Count() == 0)
 	  {
 		this.UpdateNetworkInfo(null, null);
 	  }
@@ -236,7 +269,7 @@ namespace UserClient
 	  FileInfo[] d = di.GetFiles();
 	  if (d.Where(x => x.FullName.Equals(fi.FullName, StringComparison.OrdinalIgnoreCase)).Count() == 0)
 	  {
-		using (FileStream stream = new FileStream(ClientResources.NetworkInfoFileName, FileMode.OpenOrCreate, FileAccess.Write))
+		using (FileStream stream = new FileStream(ClientResources.NetworkInfoFileName, FileMode.Create, FileAccess.Write))
 		{
 		  serializer.Serialize(stream, networkInfo);
 		}
@@ -262,10 +295,163 @@ namespace UserClient
 		}
 	  }
 	}
+	#endregion
 
+	#region Save and Load files that are saved in torrent network
+	private List<SavedFileInfo> LoadSavedFileInfoList()
+	{
+	  DirectoryInfo di = new DirectoryInfo(Directory.GetCurrentDirectory());
+	  FileInfo fi = new FileInfo(ClientResources.SavedFilesInfoFileName);
+	  XmlSerializer serializer = new XmlSerializer(typeof(List<SavedFileInfo>));
+	  if (di.EnumerateFiles().Where(x => x.FullName.Equals(fi.FullName, StringComparison.OrdinalIgnoreCase)).Count() == 0)
+	  {
+		throw new FileNotFoundException();
+	  }
+	  else
+	  {
+		using (FileStream stream = File.OpenRead(ClientResources.SavedFilesInfoFileName))
+		{
+		  return (List<SavedFileInfo>)serializer.Deserialize(stream);
+		}
+	  }
+	}
+	private void SaveNewFileInfoToList(SavedFileInfo sfi)
+	{
+	  if (sfi == null) { throw new ArgumentNullException(); }
+	  List<SavedFileInfo> list;
+	  try
+	  {
+		list = this.LoadSavedFileInfoList();
+	  }
+	  catch (FileNotFoundException)
+	  {
+		list = new List<SavedFileInfo>();
+	  }
+	  list.Add(sfi);
+	  FileInfo fi = new FileInfo("savedfiles.xml");
+	  if (fi.Exists) { fi.Delete(); }
+	  using (FileStream stream = new FileStream(ClientResources.SavedFilesInfoFileName, FileMode.CreateNew, FileAccess.Write))
+	  {
+		new XmlSerializer(typeof(List<SavedFileInfo>)).Serialize(stream, list);
+	  }
+	}
+	#endregion
+
+	private void LoadLocalNetworkFileInformation(object sender, RoutedEventArgs e)
+	{
+	  ObservableCollection<FileTableItem> fileTable = new ObservableCollection<FileTableItem>();
+	  List<SavedFileInfo> savedFiles = null;
+	  try
+	  {
+		savedFiles = this.LoadSavedFileInfoList();
+	  }
+	  catch
+	  {
+		MessageBox.Show("Sie haben noch keine Datein im Netzwerkgespeichert.");
+		return;
+	  }
+	  foreach (SavedFileInfo sfi in savedFiles)
+	  {
+		fileTable.Add(new FileTableItem()
+		{
+		  FileSize = sfi.FileSize,
+		  FileHash = sfi.FileHash,
+		  CreateTime = sfi.CreateTime,
+		  FileName = sfi.FileName,
+		  DeleteFromNetwork = false,
+		  Download = false
+		});
+	  }
+	  this.FileTable = fileTable;
+	  this.IsDataGridVisible = true;
+	  this.Source = null;
+	}
+
+
+	private void DownloadFilesFromTorrentNetwork(object sender, RoutedEventArgs e)
+	{
+	  foreach (FileTableItem filetableitem in this.FileTable)
+	  {
+		if (filetableitem.Download)
+		{
+		  this.DownloadSingleFileFromTorrentNetwork(filetableitem);
+		}
+	  }
+	}
+
+	private async void DownloadSingleFileFromTorrentNetwork(FileTableItem filetableitem)
+	{
+	  NetworkInfo networkinfo = this.LoadNetworkState();
+	  string choosenTorrent = Helper.GetRandomElement(networkinfo.TorrentList);
+	  if (!Helper.TryUriParse(choosenTorrent, out (string host, int port) channelHostPort))
+	  {
+		MessageBox.Show("Invalid torrent uri");
+		return;
+	  }
+	  string channelConnection = channelHostPort.host + ":" + channelHostPort.port;
+	  Channel channel = new Channel(channelConnection, ChannelCredentials.Insecure);
+	  TorrentService.TorrentServiceClient torrentServiceClient = new TorrentService.TorrentServiceClient(channel);
+
+	  FileDistributionRequest fileDistReq = new FileDistributionRequest() { FileHash = filetableitem.FileHash };
+	  FileDistributionResponse fileDistRes = torrentServiceClient.GetFileDistribution(fileDistReq);
+
+	  AsyncDuplexStreamingCall<FragmentDownloadRequest, FragmentDownloadResponse> downStream = torrentServiceClient.DownloadFileFragment();
+
+	  DirectoryInfo di = new DirectoryInfo(Directory.GetCurrentDirectory() + "/Downloads");
+	  if (!di.Exists) { di.Create(); }
+	  using (FileStream fileStream = new FileStream(di.FullName + "/" + filetableitem.FileName, FileMode.CreateNew, FileAccess.Write))
+	  {
+		long packetnumber = (filetableitem.FileSize + networkinfo.FragmentSize - 1) / networkinfo.FragmentSize;
+		int counter = 0;
+		fileStream.Seek(0, SeekOrigin.Begin);
+		foreach (string fragmenthash in fileDistRes.FragmentOrder)
+		{
+		  string choosenEndpoint = Helper.GetRandomElement(fileDistRes.FragmentDistribution[fragmenthash].EndPoints);
+		  if (!Helper.TryUriParse(choosenTorrent, out (string host, int port) endpointHostPort))
+		  {
+			MessageBox.Show("Invalid torrent uri");
+			return;
+		  }
+		  await downStream.RequestStream.WriteAsync(new FragmentDownloadRequest() { FragmentHash = fragmenthash });
+		  if (await downStream.ResponseStream.MoveNext())
+		  {
+			byte[] data = downStream.ResponseStream.Current.Data.ToArray();
+			if (data.Length != networkinfo.FragmentSize) { /*Fehler*/}
+			else
+			{
+			  fileStream.Write(data, 0, data.Length);
+			}
+		  }
+		  else {/*Fehler*/}
+
+		  //bool x = await downStream.ResponseStream.MoveNext();
+
+
+		}
+
+
+		//FileFragment fileFragment = new FileFragment();
+
+		// }
+
+		//{
+		//  FileFragment fileFragment = new FileFragment();
+		//  for (int i = 0; i < packetnumber; i++)
+		//  {
+		//	downStream.RequestStream.WriteAsync(new FragmentDownloadRequest() { FragmentHash = fragmenthash })
+		//	fileStream.Read(buffer, 0, buffer.Length);
+
+		//	fileFragment.FileHash = fileHash;
+		//	fileFragment.Data = ByteString.CopyFrom(buffer);
+		//	fileFragment.FragmentHash = Helper.GetHashString(hashAlgorithm.ComputeHash(buffer));
+		//	await asyncClientStreamingCall.RequestStream.WriteAsync(fileFragment);
+		//	Console.WriteLine(counter++);
+
+		//}
+	  }
+	}
   }
 }
-
 /*
 	  //TODO: Netzwerkinfo abspeichern, Torrentliste vorhalten falls Trackerserver ausfällt.
 	  DirectoryInfo di = new DirectoryInfo("");
