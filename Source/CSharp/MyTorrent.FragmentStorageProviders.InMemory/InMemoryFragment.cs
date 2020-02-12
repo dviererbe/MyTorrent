@@ -17,8 +17,9 @@ namespace MyTorrent.FragmentStorageProviders
             /// Content of the fragment.
             /// </param>
             /// <param name="persistent">
-            /// <see langword="true"/> if the fragment should not be removed when the coresponding 
-            /// allocation token will be disposed -or- <paramref name="allocationToken"/> is null; otherwise <see langword="false"/>.
+            /// <see langword="true"/> if the fragment should not be removed when the 
+            /// coresponding allocation token will be disposed -or- <paramref name="allocationToken"/> 
+            /// is null; otherwise <see langword="false"/>.
             /// </param>
             /// <param name="allocationToken">
             /// The allocation token that is associated to this fragment.
