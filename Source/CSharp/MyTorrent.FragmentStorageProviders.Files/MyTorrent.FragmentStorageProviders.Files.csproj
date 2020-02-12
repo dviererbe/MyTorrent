@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>MyTorrent.FragmentStorageProviders</RootNamespace>
+    <DocumentationFile>..\docs\MyTorrent.FragmentStorageProviders.Files.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EventIdCreationSource.Abstractions\EventIdCreationSource.Abstractions.csproj" />
+    <ProjectReference Include="..\MyTorrent.FragmentStorageProviders.Abstractions\MyTorrent.FragmentStorageProviders.Abstractions.csproj" />
+    <ProjectReference Include="..\MyTorrent.HashingServiceProviders.Abstractions\MyTorrent.HashingServiceProviders.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

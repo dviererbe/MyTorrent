@@ -1,0 +1,11 @@
+**/.vs
+**/.vscode
+
+**/bin
+**/obj
+
+docs
+
+.clocignore
+count-lines_off_code.bat
+MyTorrent.sln.DotSettings.user

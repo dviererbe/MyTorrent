@@ -1,0 +1,153 @@
+﻿syntax="proto3";
+
+package MyTorrent.gRPC;
+
+option java_multiple_files = true;
+option java_package = "mytorrent.grpc";
+option csharp_namespace = "MyTorrent.gRPC";
+
+message NetworkInfoRequest
+{
+}
+
+message NetworkInfoResponse
+{
+	//Size of one fragment in bytes. 
+    int64 FragmentSize = 1;
+	
+	//Name of the Hash Algorith used to identify files and filefragments and chech for integrity.
+	string HashAlgorithm = 2;
+
+	//List of addresses for torrent server endpoints.
+	//Address-Format: "mytorrent://<host>[:port]"
+    repeated string TorrentServer = 3; 
+}
+
+message UploadStatusRequest 
+{
+	//The hash of a file to request the upload status for.
+    string FileHash = 1;
+}
+
+enum UploadStatus 
+{
+    //File Upload was initiated. No fragment was uploaded so far.
+	Initiated = 0;
+	
+	//File ist uploading. Some fragments have already arrived.
+    Uploading = 1;
+	
+	//File Upload was canceled for some reason.
+    Canceled = 2;		
+    
+	//All fragments are uploaded, but the Server still validating the data before distributing it. 
+	Validating = 3;
+	
+	//The fragments are currently distributed to the torrent servers.
+    Distributing = 4;	
+    
+	//All fragments are distributed to the torrent servers.
+	Distributed = 5;	
+	
+	//File is Unknown.
+	Unknown = 6;		
+}
+
+message UploadStatusResponse
+{
+	//The upload status of the requested file.
+    UploadStatus Status = 1;
+}
+
+message FileFragment
+{
+	//Hash of the file the fragments belongs to.
+	string FileHash = 1;
+
+	//Hash of the fragment.
+    string FragmentHash = 2;
+
+	//Byte data of the fragment.
+    bytes Data = 3;
+}
+
+message FileUploadInitiationRequest
+{
+	//Hash of the file to intiate a upload for.
+    string FileHash = 1;
+
+	//Size of the file in bytes.
+    int64 FileSize = 2;
+}
+
+message FileUploadInitiationResponse
+{
+}
+
+message FragmentHolderList
+{
+	//List of URI's to the fragments.
+	repeated string EndPoints = 1;
+}
+
+message FileUploadResponse
+{
+	//Collection of fragment hash values with a coresponding list of URI's where the fragments were distributed to.
+    map<string, FragmentHolderList> FragmentDistribution = 1;
+}
+
+service TrackerService
+{
+	//Gets information about the torrent network.
+    rpc GetNetworkInfo(NetworkInfoRequest) returns (NetworkInfoResponse);
+
+	//Gets the upload status of an file by the hash value.
+    rpc GetUploadStatus(UploadStatusRequest) returns (UploadStatusResponse);
+
+	//Signal the tracker server to initiate the upload for a file and transmits the metadata therefore.
+    rpc InitiateUpload(FileUploadInitiationRequest) returns (FileUploadInitiationResponse);
+
+	//Uploads the fragments to the tracking server which distributes the fragments to the torrent servers.
+	//Returns where the fragments were distribution to.
+	rpc UploadFileFragments(stream FileFragment) returns (FileUploadResponse);
+}
+
+message FileDistributionRequest
+{
+    //The hash of the file you want to download
+    string FileHash = 1;
+}
+
+message FileDistributionResponse
+{
+    /* List of strings where each string is the hash of one fragment. The order of the list equals the order in which the
+     * fragment have to be put together after downloading to get the original file.
+     */
+	repeated string FragmentOrder = 1;
+    // Dictionary where for each fragment hash exists a list uris for the torrents holding this fragment.
+    map<string, FragmentHolderList> FragmentDistribution = 2;
+}
+
+message FragmentDownloadRequest
+{
+    // Hash of the fragment you want to download.
+    string FragmentHash = 1;
+}
+
+message FragmentDownloadResponse
+{
+    // Byte date of the fragment you just download.
+    bytes Data = 1;
+}
+
+// Interface between the client and the torrent servers holding the data
+service TorrentService
+{
+    /* Service that gives you for a specifik file the locations of all fragments in the torrent network
+     * and their order to join the back together.
+     */
+    rpc GetFileDistribution(FileDistributionRequest) returns (FileDistributionResponse);
+    
+    // Services that provides the byte data of the fragment, you requested by the hash string     
+    rpc DownloadFileFragment(stream FragmentDownloadRequest) returns (stream FragmentDownloadResponse);
+}

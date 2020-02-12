@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>MyTorrent.DistributionServices</RootNamespace>
+    <DocumentationFile>..\docs\MyTorrent.DistributionServices.Abstractions.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MyTorrent.FragmentStorageProviders.Abstractions\MyTorrent.FragmentStorageProviders.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

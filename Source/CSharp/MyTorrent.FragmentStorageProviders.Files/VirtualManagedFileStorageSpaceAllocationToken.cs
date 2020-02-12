@@ -1,0 +1,444 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+
+namespace MyTorrent.FragmentStorageProviders
+{
+    partial class VirtualManagedFragmentFileStorageProvider
+    {
+        /// <summary>
+        /// TODO: DOCUMENT "internal class VirtualManagedFileStorageSpaceAllocationToken : IStorageSpaceAllocationToken"
+        /// </summary>
+        internal class VirtualManagedFileStorageSpaceAllocationToken : IStorageSpaceAllocationToken
+        {
+            /// <summary>
+            /// Unique Id of the <see cref="VirtualManagedFileStorageSpaceAllocationToken"/>.
+            /// </summary>
+            /// <remarks>
+            /// This is used to monitor allocations.
+            /// </remarks>
+            public readonly Guid ID = Guid.NewGuid();
+
+            //How many bytes of the allocated storage space were already used.
+            internal long _usedStorageSpace;
+
+            //The fragments which are stored in the storage space associated to this token.
+            internal HashSet<string> _fragments;
+
+            //The fragments which are stored in the storage space associated to this token, but have not yet been fully written.
+            internal HashSet<string> _unwrittenFragments;
+
+            private readonly VirtualManagedFragmentFileStorageProvider _storageProvider;
+
+            private volatile bool _disposing = false;
+            private volatile bool _disposed = false;
+
+            /// <summary>
+            /// Initializes a new <see cref="VirtualManagedFileStorageSpaceAllocationToken"/> instance.
+            /// </summary>
+            /// <param name="size">
+            /// How many bytes of storage space were allocated.
+            /// </param>
+            /// <param name="storageProvider">
+            /// The <see cref="VirtualManagedFragmentFileStorageProvider"/> where the storage space was allocated.
+            /// </param>
+            private VirtualManagedFileStorageSpaceAllocationToken(long size, VirtualManagedFragmentFileStorageProvider storageProvider)
+            {
+                _usedStorageSpace = 0;
+                TotalAllocatedStorageSpace = size;
+                
+                _storageProvider = storageProvider;
+                _fragments = new HashSet<string>();
+                _unwrittenFragments = new HashSet<string>();   
+            }
+
+            /// <summary>
+            /// Frees resources before it is reclaimed by garbage collection.
+            /// </summary>
+            ~VirtualManagedFileStorageSpaceAllocationToken()
+            {
+                Dispose(false);
+            }
+
+            /// <summary>
+            /// Asynchronously allocates a specific amount of storage space and returns an token that represents the allocation and by which further allocations
+            /// for the allocated storage space can be made.
+            /// </summary>
+            /// <param name="size">
+            /// How many bytes of the file storage space should be allocated.
+            /// </param>
+            /// <param name="storageProvider">
+            /// The storage provider from whom storage space should be allocated.
+            /// </param>
+            /// <returns>
+            /// An <see cref="VirtualManagedFileStorageSpaceAllocationToken"/> instance that represents the allocation made and by which further allocations
+            /// for the allocated storage space can be made.
+            /// </returns>
+            /// <exception cref="ArgumentOutOfRangeException">
+            /// <paramref name="size"/> is negative.
+            /// </exception>
+            /// <exception cref="StorageSpaceAllocationException">
+            /// Less storage space is available than <paramref name="size"/> specifies as needed.
+            /// </exception>
+            public static async Task<VirtualManagedFileStorageSpaceAllocationToken> CreateAsync(
+                long size,
+                VirtualManagedFragmentFileStorageProvider storageProvider)
+            {
+                VirtualManagedFileStorageSpaceAllocationToken allocationToken;
+
+                try
+                {
+                    await storageProvider._lock.WaitAsync();
+
+                    storageProvider.AllocateStorageSpace(size);
+
+                    allocationToken = new VirtualManagedFileStorageSpaceAllocationToken(size, storageProvider);
+                    storageProvider._allocations.Add(allocationToken);
+                }
+                finally
+                {
+                    storageProvider._lock.Release();
+                }
+#if DEBUG
+                storageProvider._logger.LogDebug($"Allocated {size} bytes of storage space. (Allocation Token ID: {allocationToken.ID})");
+#endif
+                return allocationToken;
+            }
+
+            /// <summary>
+            /// <see langword="true"/> if the allocated resources associated to this token were released ;otherwise <see langword="false"/>.
+            /// </summary>
+            public bool Disposed => _disposed;
+
+            /// <summary>
+            /// Gets how many bytes are left unused of the allocated storage space, associated to this token.
+            /// </summary>
+            /// <exception cref="ObjectDisposedException">
+            /// Methods were called after the allocation token was disposed.
+            /// </exception>
+            public long AvailableFreeSpace
+            {
+                get
+                {
+                    EnsureTokenWasNotDisposed();
+
+                    long usedStorageSpace = Interlocked.Read(ref _usedStorageSpace);
+                    return usedStorageSpace < TotalAllocatedStorageSpace ? TotalAllocatedStorageSpace - usedStorageSpace : 0L;
+                }
+            }
+
+            /// <summary>
+            /// Gets how many bytes were already used of the allocated storage space, associated to this token.
+            /// </summary>
+            /// <exception cref="ObjectDisposedException">
+            /// Methods were called after the allocation token was disposed.
+            /// </exception>
+            public long UsedSpace
+            {
+                get
+                {
+                    EnsureTokenWasNotDisposed();
+                    return Interlocked.Read(ref _usedStorageSpace);
+                }
+            }
+
+            /// <summary>
+            /// Gets how many bytes were allocated in total which are associated to this token.
+            /// </summary>
+            public long TotalAllocatedStorageSpace { get; }
+
+            /// <summary>
+            /// Gets a list with hash values of all fragments which are stored in the allocated storage space associated to this token.
+            /// </summary>
+            /// <exception cref="ObjectDisposedException">
+            /// Methods were called after the allocation token was disposed.
+            /// </exception>
+            public IEnumerable<string> Fragments
+            {
+                get
+                {
+                    EnsureTokenWasNotDisposed();
+                    return _fragments;
+                }
+            }
+
+            /// <summary>
+            /// Gets a list with hash values of all fragments which are stored in the allocated storage space associated to this token and are persistent.
+            /// They will be accessible even after the allocation token is disposed.
+            /// </summary>
+            /// <exception cref="ObjectDisposedException">
+            /// Methods were called after the allocation token was disposed.
+            /// </exception>
+            public IEnumerable<string> PersistentFragments
+            {
+                get
+                {
+                    EnsureTokenWasNotDisposed();
+                    return _fragments.Where(fragmentHash => File.Exists(_storageProvider.GetCommittedFragmentPath(fragmentHash)));
+                }
+            }
+
+            /// <summary>
+            /// Ensures that the allocation token was not disposed.
+            /// </summary>
+            /// <exception cref="ObjectDisposedException">
+            /// Method were called after this allocation token was disposed.
+            /// </exception>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            internal void EnsureTokenWasNotDisposed()
+            {
+                if (Disposed)
+                    throw new ObjectDisposedException(ToString(), "Allocation token was already disposed.");
+            }
+
+            /// <summary>
+            /// Asynchronously Makes the to this associated allocated resources persistent. Even after the allocation token was disposed the fragments will be accessible.
+            /// </summary>
+            /// <remarks>
+            /// This Operation tries to be atomic. It succeeds completely or fails completely.
+            /// </remarks>
+            /// <returns>
+            /// A task that represents the asynchronous write operation.
+            /// </returns>
+            /// <exception cref="IOException">
+            /// Operation to commit non-persistent fragments to the file system failed.
+            /// </exception>
+            /// <exception cref="AggregateException">
+            /// Operation to commit non-persistent fragments to the file system failed and
+            /// also failed to revert one or more operation(s) to revert successfully committed fragments.
+            /// </exception>
+            /// <exception cref="ObjectDisposedException">
+            /// Method were called after this storage provider was disposed.
+            /// </exception>
+            public async Task CommitAsync()
+            {
+                EnsureTokenWasNotDisposed();
+
+                var committedFragments = new Stack<FragmentMetadata>();
+
+                try
+                {
+                    await _storageProvider._lock.WaitAsync();
+
+                    var uncommittedFragments = new List<FragmentMetadata>();
+
+                    foreach (string fragmentHash in _fragments)
+                    {
+                        FragmentMetadata fragment = _storageProvider._fragments[fragmentHash];
+
+                        if (fragment.Persistent)
+                            continue;
+
+                        if (fragment.ReadOperations.Count > 0)
+                            throw new IOException("Read operation ongoing. Close all read streams before commiting fragments.");
+
+
+                        uncommittedFragments.Add(fragment);
+                    }
+
+                    foreach (FragmentMetadata fragment in uncommittedFragments)
+                    {
+                        File.Move(
+                            sourceFileName: _storageProvider.GetNonCommittedFragmentPath(fragment.NormalizedFragmentHash),
+                            destFileName:   _storageProvider.GetCommittedFragmentPath(fragment.NormalizedFragmentHash));
+
+
+                        committedFragments.Push(fragment);
+                        uncommittedFragments.Remove(fragment);
+
+                        fragment.Persistent = true;
+                    }
+                }
+                catch (Exception commitException)
+                {
+                    IOException? undoException = null;
+
+                    //undo commit operations
+                    while (committedFragments.TryPop(out FragmentMetadata fragment))
+                    {
+                        try
+                        {
+                            File.Move(
+                                sourceFileName: _storageProvider.GetCommittedFragmentPath(fragment.NormalizedFragmentHash),
+                                destFileName: _storageProvider.GetNonCommittedFragmentPath(fragment.NormalizedFragmentHash));
+
+                            fragment.Persistent = false;
+                        }
+                        catch (Exception exception)
+                        {
+                            undoException ??= new IOException("Failed to revert commit for one or more fragment(s).");
+
+                            undoException.Data.Add(fragment.NormalizedFragmentHash, exception);
+                        }
+                    }
+
+                    if (undoException == null)
+                        throw new IOException("Failed to commit non persistent fragments.", commitException);
+                    else
+                        throw new AggregateException(
+                            new IOException("Failed to commit non persistent fragments.", commitException),
+                            undoException);
+                }
+                finally
+                {
+                    _storageProvider._lock.Release();
+                }
+            }
+
+            /// <summary>
+            /// Returns a string that represents the current object.
+            /// </summary>
+            /// <returns>
+            /// A string that represents the current object.
+            /// </returns>
+            public override string ToString()
+            {
+                return GetType().FullName + " (" + ID + ")";
+            }
+
+            /// <summary>
+            /// Releases all allocated resources associated to this <see cref="VirtualManagedFileStorageSpaceAllocationToken" /> instance.
+            /// </summary>
+            public void Dispose()
+            {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+
+            /// <summary>
+            /// Asynchronously releases the resources used by this <see cref="VirtualManagedFileStorageSpaceAllocationToken" /> instance.
+            /// </summary>
+            /// <returns>
+            /// A task that represents the asynchronous dispose operation.
+            /// </returns>
+            public async ValueTask DisposeAsync()
+            {
+                if (_disposing)
+                    return;
+
+                _disposing = true;
+
+                try
+                {
+                    await _storageProvider._lock.WaitAsync();
+
+                    foreach (string fragmentHash in _unwrittenFragments)
+                    {
+                        var writeStream = _storageProvider._writeOperations[fragmentHash];
+                        await writeStream.DisposeAsync();
+                    }
+
+                    long persistentStorage = 0L;
+
+                    //copy the collection because the _fragments collection is manipulated while iterating over it.
+                    string[] fragments = _fragments.ToArray();
+
+                    foreach (string fragmentHash in fragments)
+                    {
+                        var fragmentMetadata = _storageProvider._fragments[fragmentHash];
+
+                        if (fragmentMetadata.Persistent)
+                        {
+                            fragmentMetadata.AllocationToken = null;
+                            persistentStorage += fragmentMetadata.Size;
+                            continue;
+                        }
+
+                        foreach (var readOperation in fragmentMetadata.ReadOperations)
+                        {
+                            await readOperation.DisposeAsync();
+                        }
+
+                        await _storageProvider.DeleteFragmentAsyncCore(fragmentHash, wait: true);
+
+                        //should already be empty, but just to get sure...
+                        fragmentMetadata.ReadOperations.Clear();
+                    }
+
+                    _storageProvider._allocations.Remove(this);
+                    _storageProvider.DeallocateStorageSpace(TotalAllocatedStorageSpace - persistentStorage);
+                }
+                finally
+                {
+                    _storageProvider._lock.Release();
+                    _unwrittenFragments.Clear();
+                    _fragments.Clear();
+
+                    _disposed = true;
+                }
+            }
+
+            /// <summary>
+            /// Releases the unmanaged resources used by the <see cref="VirtualManagedFileStorageSpaceAllocationToken" /> and
+            /// optionally releases the managed resources.
+            /// </summary>
+            /// <param name="disposing">
+            /// <see langword="true" /> to release both managed and unmanaged resources; <see langword="false" /> to
+            /// release only unmanaged resources.
+            /// </param>
+            protected virtual void Dispose(bool disposing)
+            {
+                if (_disposing)
+                    return;
+
+                _disposing = true;
+
+                try
+                {
+                    _storageProvider._lock.Wait();
+
+                    foreach (string fragmentHash in _unwrittenFragments)
+                    {
+                        var writeStream = _storageProvider._writeOperations[fragmentHash];
+                        writeStream.Dispose();
+                    }
+
+                    long persistentStorage = 0L;
+
+                    //copy the collection because the _fragments collection is manipulated while iterating over it.
+                    string[] fragments = _fragments.ToArray();
+
+                    foreach (string fragmentHash in fragments)
+                    {
+                        var fragmentMetadata = _storageProvider._fragments[fragmentHash];
+
+                        if (fragmentMetadata.Persistent)
+                        {
+                            fragmentMetadata.AllocationToken = null;
+                            persistentStorage += fragmentMetadata.Size;
+                            continue;
+                        }
+
+                        fragmentMetadata.Remove = true;
+
+                        foreach (var readOperation in fragmentMetadata.ReadOperations)
+                        {
+                            readOperation.Dispose();
+                        }
+
+                        _storageProvider.DeleteFragmentAsyncCore(fragmentHash, wait: true).GetAwaiter().GetResult();
+
+                        //should already be empty, but just to get sure...
+                        fragmentMetadata.ReadOperations.Clear();
+                    }
+
+                    _storageProvider._allocations.Remove(this);
+                    _storageProvider.DeallocateStorageSpace(TotalAllocatedStorageSpace - persistentStorage);
+                }
+                finally
+                {
+                    _storageProvider._lock.Release();
+                    _unwrittenFragments.Clear();
+                    _fragments.Clear();
+
+                    _disposed = true;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>MyTorrent.DistributionServices</RootNamespace>
+    <DocumentationFile>..\docs\MyTorrent.DistributionServices.Mqtt.Subscriber.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.1.1" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\EventIdCreationSource.Abstractions\EventIdCreationSource.Abstractions.csproj" />
+    <ProjectReference Include="..\MyTorrent.DistributionServices.Abstractions\MyTorrent.DistributionServices.Abstractions.csproj" />
+    <ProjectReference Include="..\MyTorrent.DistributionServices.DistributionMap\MyTorrent.DistributionServices.DistributionMap.csproj" />
+    <ProjectReference Include="..\MyTorrent.FragmentStorageProviders.Abstractions\MyTorrent.FragmentStorageProviders.Abstractions.csproj" />
+    <ProjectReference Include="..\MyTorrent.HashingServiceProviders.Abstractions\MyTorrent.HashingServiceProviders.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

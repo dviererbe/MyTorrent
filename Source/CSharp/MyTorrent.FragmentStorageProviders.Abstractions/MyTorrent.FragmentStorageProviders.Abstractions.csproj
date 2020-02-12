@@ -1,0 +1,10 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>MyTorrent.FragmentStorageProviders</RootNamespace>
+    <DocumentationFile>..\docs\MyTorrent.FragmentStorageProviders.Abstractions.xml</DocumentationFile>
+  </PropertyGroup>
+  
+</Project>
