@@ -12,8 +12,15 @@ namespace MyTorrent.FragmentStorageProviders
     partial class VirtualManagedFragmentFileStorageProvider
     {
         /// <summary>
-        /// TODO: DOCUMENT "internal class VirtualManagedFileStorageSpaceAllocationToken : IStorageSpaceAllocationToken"
+        /// Token that is associated to an previously allocated part of filesystem storage space to that fragments can associated to.
         /// </summary>
+        /// <remarks>
+        /// This can be used if you know e.g. you have to store 5 fragments with 5000 bytes total.
+        /// So you can allocate 5000 bytes and associate the allocation token to the fragments when storing them.
+        /// This grantees you the storage space.
+        /// 
+        /// Disposal of an <see cref="VirtualManagedFileStorageSpaceAllocationToken"/> will result in removal of all associated fragments. 
+        /// </remarks>
         internal class VirtualManagedFileStorageSpaceAllocationToken : IStorageSpaceAllocationToken
         {
             /// <summary>

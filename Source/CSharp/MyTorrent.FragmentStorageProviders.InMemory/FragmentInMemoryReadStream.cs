@@ -8,12 +8,33 @@ namespace MyTorrent.FragmentStorageProviders
 {
     public partial class FragmentInMemoryStorageProvider
     {
+        /// <summary>
+        /// Stream which reads a fragment that is stored in-memory.
+        /// </summary>
         internal class FragmentInMemoryReadStream : MemoryStream
         {
             private volatile bool _disposed = false;
             private readonly FragmentInMemoryStorageProvider _storageProvider;
 
-            private FragmentInMemoryReadStream(string fragmentHash, byte[] fragmentData, FragmentInMemoryStorageProvider fragmentInMemoryStorageProvider)
+            /// <summary>
+            /// Initializes a new <see cref="FragmentInMemoryReadStream"/> instance.
+            /// </summary>
+            /// <param name="fragmentHash">
+            /// Normalized fragment hash value of the fragment that should be read.
+            /// </param>
+            /// <param name="fragmentData">
+            /// Content of the fragment.
+            /// </param>
+            /// <param name="fragmentInMemoryStorageProvider">
+            /// Storage provider where the fragment is stored.
+            /// </param>
+            /// <exception cref="ArgumentNullException">
+            /// <paramref name="fragmentData"/> is <see langword="null"/>.
+            /// </exception>
+            private FragmentInMemoryReadStream(
+                string fragmentHash, 
+                byte[] fragmentData, 
+                FragmentInMemoryStorageProvider fragmentInMemoryStorageProvider)
                 : base(fragmentData, false)
             {
                 _storageProvider = fragmentInMemoryStorageProvider;
@@ -29,20 +50,31 @@ namespace MyTorrent.FragmentStorageProviders
             }
 
             /// <summary>
-            /// TODO: DOCUMENT "public static FragmentInMemoryReadStream Create(string fragmentHash, bool delete, FragmentInMemoryStorageProvider storageProvider)"
+            /// Creates a new <see cref="FragmentInMemoryReadStream"/> to read the content 
+            /// of a fragment with a specific hash value from.
             /// </summary>
             /// <param name="fragmentHash">
-            ///
+            /// The hash value of the fragment to read the fragemnt from.
             /// </param>
             /// <param name="delete">
-            ///
+            /// <see langword="true"/> if the fragment should be deleted when the last 
+            /// <see cref="FragmentInMemoryReadStream"/> is closed that reads the specified fragement; otherwise <see langword="false"/>.
             /// </param>
             /// <param name="storageProvider">
-            ///
+            /// Storage provider where the fragment is stored.
             /// </param>
             /// <returns>
-            ///
+            /// The <see cref="FragmentInMemoryReadStream"/> to read the content of the specified fragment from.
             /// </returns>
+            /// <exception cref="ArgumentNullException">
+            /// <paramref name="fragmentHash"/> is <see langword="null"/>.
+            /// </exception>
+            /// <exception cref="FormatException">
+            /// <paramref name="fragmentHash"/> contains an invalid hash value.
+            /// </exception>
+            /// <exception cref="KeyNotFoundException">
+            /// No fragment with the specified <paramref name="fragmentHash"/> was found.
+            /// </exception>
             public static FragmentInMemoryReadStream Create(
                 string fragmentHash,
                 bool delete,

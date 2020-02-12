@@ -18,8 +18,8 @@
   <ItemGroup>
     <ProjectReference Include="..\EventIdCreationSource.Abstractions\EventIdCreationSource.Abstractions.csproj" />
     <ProjectReference Include="..\EventIdCreationSource.Core\EventIdCreationSource.Core.csproj" />
-    <ProjectReference Include="..\MyTorrent.FragmentStorageProviders.Abstractions\MyTorrent.FragmentStorageProviders.Abstractions.csproj" />
-    <ProjectReference Include="..\MyTorrent.FragmentStorageProviders.Files\MyTorrent.FragmentStorageProviders.Files.csproj" />
+    <ProjectReference Include="..\MyTorrent.FragmentStorageProviders.Files.PhysicalManaged\MyTorrent.FragmentStorageProviders.Files.PhysicalManaged.csproj" />
+    <ProjectReference Include="..\MyTorrent.FragmentStorageProviders.Files.VirtualManaged\MyTorrent.FragmentStorageProviders.Files.VirtualManaged.csproj" />
     <ProjectReference Include="..\MyTorrent.FragmentStorageProviders.InMemory\MyTorrent.FragmentStorageProviders.InMemory.csproj" />
     <ProjectReference Include="..\MyTorrent.HashingServiceProviders.Abstractions\MyTorrent.HashingServiceProviders.Abstractions.csproj" />
     <ProjectReference Include="..\MyTorrent.HashingServiceProviders.Standard\MyTorrent.HashingServiceProviders.Standard.csproj" />

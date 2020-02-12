@@ -11,7 +11,7 @@ namespace MyTorrent.FragmentStorageProviders.Tests
 {
     public class VirtualManagedFragmentFileStorageProviderTests : AbstractFragmentStorageProviderTests, IDisposable
     {
-        private const string TestFolderPath = "TESTS (CAN BE DELETED)";
+        private const string TestFolderPath = "TESTS (CAN BE DELETED)/Virtual";
 
         private List<VirtualManagedFragmentFileStorageProvider> _storageProviders;
 
@@ -34,8 +34,8 @@ namespace MyTorrent.FragmentStorageProviders.Tests
         {
             string storageFolderPath = Path.Combine(Directory.GetCurrentDirectory(), TestFolderPath, Guid.NewGuid().ToString("B"));
 
-            IOptions<FragmentFileStorageProviderOptions> options =
-                Options.Create(new FragmentFileStorageProviderOptions(storageFolderPath, 1024, true));
+            IOptions<VirtualManagedFragmentFileStorageProviderOptions> options =
+                Options.Create(new VirtualManagedFragmentFileStorageProviderOptions(storageFolderPath, 1024, true));
 
             var storageProvider =  new VirtualManagedFragmentFileStorageProvider(
                 logger: CreateLogger<VirtualManagedFragmentFileStorageProvider>(),

@@ -1,11 +1,17 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using MyTorrent.HashingServiceProviders;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-//TODO: REMOVE ME WHEN IMPLEMENTING
+////////////////////////////////////
+//TODO: REMOVE ME WHEN IMPLEMENTED
 #pragma warning disable 1998
+////////////////////////////////////
 
 namespace MyTorrent.FragmentStorageProviders
 {
@@ -15,6 +21,58 @@ namespace MyTorrent.FragmentStorageProviders
     /// </summary>
     public class PhysicalManagedFragmentFileStorageProvider : IFragmentStorageProvider
     {
+        #region Private Variables
+
+        private readonly IEventIdCreationSource _eventIdCreationSource;
+        private readonly ILogger<PhysicalManagedFragmentFileStorageProvider> _logger;
+
+        private readonly IHashingServiceProvider _hashingServiceProvider;
+
+        /// <summary>
+        /// The Limit how many bytes can be allocated.
+        /// </summary>
+        private readonly long _storageSpaceUsageLimit;
+
+        private volatile bool _disposed = false;
+
+        #endregion
+
+        #region Con-/Destructors 
+
+        /// <summary>
+        /// Initializes a new <see cref="PhysicalManagedFragmentFileStorageProvider"/> instance.
+        /// </summary>
+        /// <param name="logger">
+        /// The logger that should be used for this <see cref="PhysicalManagedFragmentFileStorageProvider"/> instance.
+        /// </param>
+        /// <param name="eventIdCreationSource">
+        /// The source for creating unique event Id's that should be used by this <see cref="PhysicalManagedFragmentFileStorageProvider"/> instance.
+        /// </param>
+        /// <param name="hashingServiceProvider">
+        /// The service provider that validates und normalizes hashes and should be used by this <see cref="PhysicalManagedFragmentFileStorageProvider"/> instance.
+        /// </param>
+        /// <param name="options">
+        /// The options to configure this <see cref="PhysicalManagedFragmentFileStorageProvider"/> instance.
+        /// </param>
+        public PhysicalManagedFragmentFileStorageProvider(
+            ILogger<PhysicalManagedFragmentFileStorageProvider> logger,
+            IEventIdCreationSource eventIdCreationSource,
+            IHashingServiceProvider hashingServiceProvider,
+            IOptions<PhysicalManagedFragmentFileStorageProviderOptions>? options = null)
+        {
+            _logger = logger;
+            _eventIdCreationSource = eventIdCreationSource;
+            _hashingServiceProvider = hashingServiceProvider;
+
+            EventId eventId = GetNextEventId();
+            _logger.LogInformation(eventId, "Initializing VirtualManaged-Fragment-FileStorage-Provider.");
+
+            options ??= Options.Create(PhysicalManagedFragmentFileStorageProviderOptions.Default);
+
+            _storageSpaceUsageLimit = options.Value?.StorageSpaceUsageLimit
+                                      ?? PhysicalManagedFragmentFileStorageProviderOptions.Default.StorageSpaceUsageLimit;
+        }
+
         /// <summary>
         /// Frees resources before it is reclaimed by garbage collection.
         /// </summary>
@@ -23,11 +81,15 @@ namespace MyTorrent.FragmentStorageProviders
             Dispose(false);
         }
 
+        #endregion
+
+        #region Properties
+
         /// <summary>
         /// <see langword="true"/> if the storage provider and all associated resources allocations were
         /// released ;otherwise <see langword="false"/>.
         /// </summary>
-        public bool Disposed => throw new NotImplementedException();
+        public bool Disposed => _disposed;
 
         /// <summary>
         /// Gets how many bytes still fit into this storage provider.
@@ -49,7 +111,15 @@ namespace MyTorrent.FragmentStorageProviders
         /// <exception cref="ObjectDisposedException">
         /// Method were called after this storage provider was disposed.
         /// </exception>
-        public long AvailableStorageSpace => throw new NotImplementedException();
+        public long AvailableStorageSpace
+        {
+            get
+            {
+                EnsureStorageProviderWasNotDisposed();
+
+                throw new NotImplementedException();
+            }
+        }
 
         /// <summary>
         /// Gets how many bytes this storage provider already stores.
@@ -71,7 +141,15 @@ namespace MyTorrent.FragmentStorageProviders
         /// <exception cref="ObjectDisposedException">
         /// Method were called after this storage provider was disposed.
         /// </exception>
-        public long UsedStorageSpace => throw new NotImplementedException();
+        public long UsedStorageSpace
+        {
+            get
+            {
+                EnsureStorageProviderWasNotDisposed();
+
+                throw new NotImplementedException();
+            }
+        }
 
         /// <summary>
         /// Gets the maximum allowed storage space usage, in bytes.
@@ -88,7 +166,14 @@ namespace MyTorrent.FragmentStorageProviders
         /// <exception cref="ObjectDisposedException">
         /// Method were called after this storage provider was disposed.
         /// </exception>
-        public long StorageSpaceUsageLimit => throw new NotImplementedException();
+        public long StorageSpaceUsageLimit
+        {
+            get
+            {
+                EnsureStorageProviderWasNotDisposed();
+                return _storageSpaceUsageLimit;
+            }
+        }
 
         /// <summary>
         /// Gets a collection with hash values of all fragments which are stored by this storage provider.
@@ -99,7 +184,15 @@ namespace MyTorrent.FragmentStorageProviders
         /// <exception cref="ObjectDisposedException">
         /// Method were called after this storage provider was disposed.
         /// </exception>
-        public IReadOnlyCollection<string> Fragments => throw new NotImplementedException();
+        public IReadOnlyCollection<string> Fragments
+        {
+            get
+            {
+                EnsureStorageProviderWasNotDisposed();
+
+                throw new NotImplementedException();
+            }
+        }
 
         /// <summary>
         /// Gets a collection of all active storage allocations.
@@ -110,7 +203,50 @@ namespace MyTorrent.FragmentStorageProviders
         /// <exception cref="ObjectDisposedException">
         /// Method were called after this storage provider was disposed.
         /// </exception>
-        public IReadOnlyCollection<IStorageSpaceAllocationToken> Allocations => throw new NotImplementedException();
+        public IReadOnlyCollection<IStorageSpaceAllocationToken> Allocations
+        {
+            get
+            {
+                EnsureStorageProviderWasNotDisposed();
+
+                throw new NotImplementedException();
+            }
+        }
+
+        #endregion
+
+        #region Methods
+
+        #region Helper Methods
+
+        /// <summary>
+        /// Gets the next unique event id.
+        /// </summary>
+        /// <param name="name">
+        /// The name of the event (optional).
+        /// </param>
+        /// <returns>
+        /// The unique event id.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private EventId GetNextEventId(string? name = null) => _eventIdCreationSource.GetNextId(name);
+
+        /// <summary>
+        /// Ensures that the storage provider was not disposed.
+        /// </summary>
+        /// <exception cref="ObjectDisposedException">
+        /// Method were called after this storage provider was disposed.
+        /// </exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void EnsureStorageProviderWasNotDisposed()
+        {
+            if (_disposed)
+                throw new ObjectDisposedException(
+                    objectName: GetType().FullName,
+                    message: "Virtual-managed file storage provider was already disposed.");
+        }
+
+        #endregion
 
         /// <summary>
         /// Asynchronously allocates a specific amount of storage.
@@ -136,6 +272,8 @@ namespace MyTorrent.FragmentStorageProviders
         /// </exception>
         public async Task<IStorageSpaceAllocationToken> AllocateStorageSpaceAsync(long size)
         {
+            EnsureStorageProviderWasNotDisposed();
+
             throw new NotImplementedException();
         }
 
@@ -159,6 +297,8 @@ namespace MyTorrent.FragmentStorageProviders
         /// </exception>
         public async ValueTask<bool> IsFragmentStoredAsync(string fragmentHash)
         {
+            EnsureStorageProviderWasNotDisposed();
+
             throw new NotImplementedException();
         }
 
@@ -182,6 +322,8 @@ namespace MyTorrent.FragmentStorageProviders
         /// </exception>
         public async ValueTask<long> GetFragmentStorageSizeAsync(string fragmentHash)
         {
+            EnsureStorageProviderWasNotDisposed();
+
             throw new NotImplementedException();
         }
 
@@ -225,6 +367,8 @@ namespace MyTorrent.FragmentStorageProviders
         /// </exception>
         public async Task<byte[]> GetFragmentAsync(string fragmentHash, bool delete = false, CancellationToken? cancellationToken = null)
         {
+            EnsureStorageProviderWasNotDisposed();
+
             throw new NotImplementedException();
         }
 
@@ -263,6 +407,8 @@ namespace MyTorrent.FragmentStorageProviders
         /// </exception>
         public Stream ReadFragment(string fragmentHash, bool delete = false)
         {
+            EnsureStorageProviderWasNotDisposed();
+
             throw new NotImplementedException();
         }
 
@@ -310,9 +456,10 @@ namespace MyTorrent.FragmentStorageProviders
         /// <paramref name="allocationToken"/> is not <see langword="null"/> and was already disposed.
         /// -or- Method were called after this storage provider was disposed.
         /// </exception>
-        public async Task StoreFragmentAsync(string fragmentHash, byte[] data, IStorageSpaceAllocationToken? allocationToken = null,
-            CancellationToken? cancellationToken = null)
+        public async Task StoreFragmentAsync(string fragmentHash, byte[] data, IStorageSpaceAllocationToken? allocationToken = null, CancellationToken? cancellationToken = null)
         {
+            EnsureStorageProviderWasNotDisposed();
+
             throw new NotImplementedException();
         }
 
@@ -361,6 +508,8 @@ namespace MyTorrent.FragmentStorageProviders
         /// </exception>
         public Stream WriteFragment(string fragmentHash, long fragmentSize, IStorageSpaceAllocationToken? allocationToken = null)
         {
+            EnsureStorageProviderWasNotDisposed();
+
             throw new NotImplementedException();
         }
 
@@ -395,6 +544,8 @@ namespace MyTorrent.FragmentStorageProviders
         /// </exception>
         public async Task DeleteFragmentAsync(string fragmentHash, bool wait = false)
         {
+            EnsureStorageProviderWasNotDisposed();
+
             throw new NotImplementedException();
         }
 
@@ -415,7 +566,15 @@ namespace MyTorrent.FragmentStorageProviders
         /// </returns>
         public async ValueTask DisposeAsync()
         {
-            throw new NotImplementedException();
+            if (_disposed)
+                return;
+
+            _disposed = true;
+
+            //Release unmanaged resources here
+            //Release managed resources here
+
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -428,14 +587,21 @@ namespace MyTorrent.FragmentStorageProviders
         /// </param>
         private void Dispose(bool disposing)
         {
-            //Just that ReSharper shuts the fuck up... this is fucking not implemented...
-            //of course is the variable "disposing" not used.
+            if (_disposed)
+                return;
+
+            _disposed = true;
+
+            //Just that ReSharper shuts the fuck up... of course is the 
+            //variable "disposing" not used when the method is not implemented.
             if (disposing)
             {
-
+                //Release managed resources here
             }
 
-            throw new NotImplementedException();
+            //Release unmanaged resources here
         }
+
+        #endregion
     }
 }

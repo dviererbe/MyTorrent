@@ -90,7 +90,7 @@ namespace MyTorrent.FragmentStorageProviders
             ILogger<VirtualManagedFragmentFileStorageProvider> logger,
             IEventIdCreationSource eventIdCreationSource,
             IHashingServiceProvider hashingServiceProvider,
-            IOptions<FragmentFileStorageProviderOptions>? options = null)
+            IOptions<VirtualManagedFragmentFileStorageProviderOptions>? options = null)
         {
             _logger = logger;
             _eventIdCreationSource = eventIdCreationSource;
@@ -99,11 +99,11 @@ namespace MyTorrent.FragmentStorageProviders
             EventId eventId = GetNextEventId();
             _logger.LogInformation(eventId, "Initializing VirtualManaged-Fragment-FileStorage-Provider.");
 
-            options ??= Options.Create(FragmentFileStorageProviderOptions.Default);
+            options ??= Options.Create(VirtualManagedFragmentFileStorageProviderOptions.Default);
 
             _usedStorageSpace = 0L;
             _storageSpaceUsageLimit = options.Value?.StorageSpaceUsageLimit
-                                      ?? FragmentFileStorageProviderOptions.Default.StorageSpaceUsageLimit;
+                                      ?? VirtualManagedFragmentFileStorageProviderOptions.Default.StorageSpaceUsageLimit;
 
             //unlimited storage space usage
             if (_storageSpaceUsageLimit < 0)
@@ -116,14 +116,14 @@ namespace MyTorrent.FragmentStorageProviders
             _writeOperations = new Dictionary<string, VirtualManagedFragmentFileWriteStream>();
 
             string storageFolderPath = options.Value?.StorageFolderPath
-                                       ?? FragmentFileStorageProviderOptions.Default.StorageFolderPath
-                                       ?? throw new ArgumentNullException(nameof(FragmentFileStorageProviderOptions.StorageFolderPath));
+                                       ?? VirtualManagedFragmentFileStorageProviderOptions.Default.StorageFolderPath
+                                       ?? throw new ArgumentNullException(nameof(VirtualManagedFragmentFileStorageProviderOptions.StorageFolderPath));
 
             _storageFolder = new DirectoryInfo(storageFolderPath);
             _tmpStorageFolder = new DirectoryInfo(Path.Combine(storageFolderPath, "temp"));
             _driveInfo = new DriveInfo(_storageFolder.Root.FullName);
 
-            bool resetOnStartup = options.Value?.ResetOnStartup ?? FragmentFileStorageProviderOptions.Default.ResetOnStartup;
+            bool resetOnStartup = options.Value?.ResetOnStartup ?? VirtualManagedFragmentFileStorageProviderOptions.Default.ResetOnStartup;
             
             if (_storageFolder.Exists)
             {

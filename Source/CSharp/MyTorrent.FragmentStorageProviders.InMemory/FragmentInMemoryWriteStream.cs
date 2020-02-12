@@ -7,6 +7,9 @@ namespace MyTorrent.FragmentStorageProviders
 {
     public partial class FragmentInMemoryStorageProvider
     {
+        /// <summary>
+        /// Stream which writes a fragment that is stored in-memory.
+        /// </summary>
         internal class FragmentInMemoryWriteStream : MemoryStream
         {
             private volatile bool _disposed = false;
@@ -14,6 +17,22 @@ namespace MyTorrent.FragmentStorageProviders
             private readonly FragmentInMemoryStorageProvider _storageProvider;
             private readonly InMemoryStorageSpaceAllocationToken? _allocationToken;
 
+            /// <summary>
+            /// Initializes a new <see cref="FragmentInMemoryWriteStream"/> instance.
+            /// </summary>
+            /// <param name="fragmentHash">
+            /// Normalizes fragment hash value of the fragment that should be written.
+            /// </param>
+            /// <param name="fragmentSize">
+            /// Size of the fragment content in bytes.
+            /// </param>
+            /// <param name="fragmentInMemoryStorageProvider">
+            /// Storage provider where the fragment should be stored.
+            /// </param>
+            /// <param name="allocationToken">
+            /// If not <see langword="null"/> the resources of the allocated resources associated to 
+            /// this <paramref name="allocationToken"/> will be used to store the fragment.
+            /// </param>
             private FragmentInMemoryWriteStream(
                 string fragmentHash, long fragmentSize, 
                 FragmentInMemoryStorageProvider fragmentInMemoryStorageProvider,
@@ -28,6 +47,47 @@ namespace MyTorrent.FragmentStorageProviders
                 base.SetLength(0);
             }
 
+            /// <summary>
+            /// Creates a <see cref="FragmentInMemoryWriteStream"/> instance to write the content.
+            /// </summary>
+            /// <param name="fragmentHash">
+            /// Fragment hash value of the fragment that should be written.
+            /// </param>
+            /// <param name="fragmentSize">
+            /// Size of the fragment content in bytes.
+            /// </param>
+            /// <param name="storageProvider">
+            /// Storage provider where the fragment should be stored.
+            /// </param>
+            /// <param name="allocationToken">
+            /// If not <see langword="null"/> the resources of the allocated resources associated to 
+            /// this <paramref name="allocationToken"/> will be used to store the fragment.
+            /// </param>
+            /// <returns>
+            /// The <see cref="FragmentInMemoryWriteStream"/> to write the content of the fragment to.
+            /// </returns>
+            /// <exception cref="ArgumentNullException">
+            /// <paramref name="fragmentHash"/> is <see langword="null"/>.
+            /// </exception>
+            /// <exception cref="ArgumentOutOfRangeException">
+            /// <paramref name="fragmentSize"/> is negative.
+            /// </exception>
+            /// <exception cref="ArgumentException">
+            /// An fragment with the specified <paramref name="fragmentHash"/> already exists.
+            /// -or- <paramref name="allocationToken"/> is not <see langword="null"/> and unknown to the <paramref name="storageProvider"/>.
+            /// </exception>
+            /// <exception cref="FormatException">
+            /// <paramref name="fragmentHash"/> contains an invalid hash value.
+            /// </exception>
+            /// <exception cref="IOException">
+            /// An other write operation already tries to write a fragment with the same hash value.
+            /// </exception>
+            /// <exception cref="StorageSpaceAllocationException">
+            /// Less storage space is available than <paramref name="fragmentSize"/> specifies as needed.
+            /// </exception>
+            /// <exception cref="ObjectDisposedException">
+            /// Allocation token is not <see langword="null"/> and was disposed.
+            /// </exception>
             public static FragmentInMemoryWriteStream Create(
                 string fragmentHash,
                 long fragmentSize,
@@ -178,11 +238,11 @@ namespace MyTorrent.FragmentStorageProviders
             }
 
             /// <summary>
-            /// TODO: DOCUMENT "private void ReleaseResources()"
+            /// Releases the resources used by this <see cref="FragmentInMemoryWriteStream" />.
             /// </summary>
-            /// <returns>
-            ///
-            /// </returns>
+            /// <remarks>
+            /// Not Thread-Safe!
+            /// </remarks>
             private void ReleaseResources()
             {
                 if (!_disposed)

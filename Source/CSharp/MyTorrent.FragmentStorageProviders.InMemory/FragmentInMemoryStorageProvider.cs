@@ -727,7 +727,7 @@ namespace MyTorrent.FragmentStorageProviders
         }
 
         /// <summary>
-        /// Deletes the stored data of an fragment from this storage provider.
+        /// Asynchronously deletes the stored data of an fragment from this storage provider.
         /// </summary>
         /// <remarks>
         /// Does nothing if no fragment with the specified <paramref name="fragmentHash"/> was found. 
@@ -740,6 +740,9 @@ namespace MyTorrent.FragmentStorageProviders
         /// <see langword="false"/> if this operation should finish just after the fragment was marked as to delete.
         /// The last pending reader who reads the specified fragment will delete the fragment then.
         /// </param>
+        /// <returns>
+        /// A task that represents the asynchronous delete operation.
+        /// </returns>
         /// <exception cref="ArgumentNullException">
         /// Throws if <paramref name="fragmentHash"/> is <see langword="null"/>.
         /// </exception>
@@ -773,16 +776,20 @@ namespace MyTorrent.FragmentStorageProviders
         }
 
         /// <summary>
-        /// TODO: DOCUMENT "private Task DeleteFragmentAsyncCore(string fragmentHash, bool wait)"
+        /// The shared core functionality to asynchronously delete a fregment from this storage provider.
         /// </summary>
+        /// <remarks>
+        /// Not Thread-Safe!
+        /// </remarks>
         /// <param name="fragmentHash">
-        ///
+        /// Normalizes hash value of the fragment to delete.
         /// </param>
         /// <param name="wait">
-        ///
+        /// <see langword="true"/> if this operation should be waiting for all pending readers to finish until the fragment was deleted;
+        /// <see langword="false"/> if this operation should finish just after the fragment was marked as to delete.
         /// </param>
         /// <returns>
-        ///
+        /// A task that represents the asynchronous delete operation.
         /// </returns>
         private Task DeleteFragmentAsyncCore(string fragmentHash, bool wait)
         {
@@ -861,6 +868,14 @@ namespace MyTorrent.FragmentStorageProviders
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Releases the unmanaged resources used by the <see cref="FragmentInMemoryStorageProvider" /> and
+        /// optionally releases the managed resources.
+        /// </summary>
+        /// <param name="disposing">
+        /// <see langword="true" /> to release both managed and unmanaged resources; <see langword="false" /> to
+        /// release only unmanaged resources.
+        /// </param>
         private void Dispose(bool disposing)
         {
             if (_disposed)

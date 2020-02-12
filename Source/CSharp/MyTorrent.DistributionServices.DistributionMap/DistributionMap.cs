@@ -7,53 +7,6 @@ using System.Threading;
 
 namespace MyTorrent.DistributionServices
 {
-    public interface IClient
-    {
-        public string Id { get; }
-        public IEnumerable<Uri> Endpoints { get; }
-        public IEnumerable<string> Fragments { get; }
-    }
-
-    internal class Client : IClient
-    {
-        private readonly HashSet<string> _fragments;
-
-        public Client(string id, IEnumerable<Uri> endpoints)
-        {
-            Id = id;
-            Endpoints = endpoints;
-            _fragments = new HashSet<string>();
-        }
-
-        public string Id { get; }
-
-        public IEnumerable<Uri> Endpoints { get; }
-
-        public IEnumerable<string> Fragments => _fragments;
-
-        public bool AddFragment(string fragment)
-        {
-            return _fragments.Add(fragment);
-        }
-    }
-
-    public class FragmentInfo
-    {
-        public FragmentInfo(string fragmentHash, long size)
-        {
-            Hash = fragmentHash;
-            Size = size;
-
-            FragmentOwner = new HashSet<Client>();
-        }
-
-        public string Hash { get; }
-
-        public long Size { get; }
-
-        internal HashSet<Client> FragmentOwner { get; }
-    }
-
     /// <summary>
     /// Data structure to keep track how the fragments are distributed in a distribution network.
     /// </summary>

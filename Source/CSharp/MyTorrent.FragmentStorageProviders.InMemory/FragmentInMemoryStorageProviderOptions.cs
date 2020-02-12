@@ -7,14 +7,17 @@ namespace MyTorrent.FragmentStorageProviders
     /// </summary>
     public class FragmentInMemoryStorageProviderOptions
     {
+        /// <summary>
+        /// Default options for the <see cref="FragmentInMemoryStorageProvider"/>.
+        /// </summary>
         public static readonly FragmentInMemoryStorageProviderOptions Default = CreateDefault();
 
 
         /// <summary>
-        /// TODO: DOCUMENT "private static FragmentInMemoryStorageProviderOptions CreateDefault()"
+        /// Creates the default options for the <see cref="FragmentInMemoryStorageProvider"/>.
         /// </summary>
         /// <returns>
-        ///
+        /// The default options for the <see cref="FragmentInMemoryStorageProvider"/>.
         /// </returns>
         private static FragmentInMemoryStorageProviderOptions CreateDefault()
         {
@@ -28,11 +31,20 @@ namespace MyTorrent.FragmentStorageProviders
             return new FragmentInMemoryStorageProviderOptions(usageLimit);
         }
 
+        /// <summary>
+        /// Initializes new <see cref="FragmentInMemoryStorageProviderOptions"/> instance with default options.
+        /// </summary>
         public FragmentInMemoryStorageProviderOptions()
         {
             StorageSpaceUsageLimit = Default.StorageSpaceUsageLimit;
         }
 
+        /// <summary>
+        /// Initializes new <see cref="FragmentInMemoryStorageProviderOptions"/> instance with custom options.
+        /// </summary>
+        /// <param name="storageSpaceUsageLimit">
+        /// Limits how many bytes the <see cref="FragmentInMemoryStorageProvider"/> is allowed to store in the working memory.
+        /// </param>
         public FragmentInMemoryStorageProviderOptions(long storageSpaceUsageLimit)
         {
             StorageSpaceUsageLimit = storageSpaceUsageLimit;

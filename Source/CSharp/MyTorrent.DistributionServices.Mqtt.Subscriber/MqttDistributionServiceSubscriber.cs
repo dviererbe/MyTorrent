@@ -16,6 +16,9 @@ namespace MyTorrent.DistributionServices
     /// </summary>
     public class MqttDistributionServiceSubscriber : IDistributionServiceSubscriber
     {
+        /// <summary>
+        /// Identifier used by the mqtt client.
+        /// </summary>
         public readonly Guid ClientId = Guid.NewGuid();
 
         //TODO: IMPLEMENT Log Messages

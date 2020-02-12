@@ -7,5 +7,5 @@
 docs
 
 .clocignore
-count-lines_off_code.bat
+count-lines_of_code.sh
 MyTorrent.sln.DotSettings.user

@@ -1,18 +1,16 @@
 ﻿using MyTorrent.gRPC;
-
 using Grpc.Core;
-
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MyTorrent.FragmentStorageProviders;
 using Microsoft.Extensions.Hosting;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using MyTorrent.DistributionServices;
+using System.Collections.Generic;
+using System.Linq;
 
 using static Utils.StringEqualsIgnoreCaseExtension;
-using MyTorrent.DistributionServices;
 
 namespace MyTorrent.TorrentServer.Services
 {
@@ -29,7 +27,6 @@ namespace MyTorrent.TorrentServer.Services
         private readonly IEventIdCreationSource _eventIdCreationSource;
 
         private bool _started = false;
-        private readonly SemaphoreSlim _lock;
 
         private readonly IHostApplicationLifetime _appLifetime;
 
@@ -45,8 +42,6 @@ namespace MyTorrent.TorrentServer.Services
         {
             _logger = logger;
             _eventIdCreationSource = eventIdCreationSource;
-
-            _lock = new SemaphoreSlim(initialCount: 1);
 
             _appLifetime = appLifetime;
             _distributionService = distributionService;
@@ -135,15 +130,50 @@ namespace MyTorrent.TorrentServer.Services
 
         public override Task<FileDistributionResponse> GetFileDistribution(FileDistributionRequest request, ServerCallContext context)
         {
-            EventId eventId = GetNextEventId();
-
-            var response = new FileDistributionResponse()
+            FileDistributionResponse Operation()
             {
-                FragmentDistribution = {  },
-                FragmentOrder = { }
-            };
+                EventId eventId = GetNextEventId();
 
-            return Task.FromResult(response);
+                if (!_distributionService.TryGetFileInfo(request.FileHash, out IFragmentedFileInfo? fileInfo))
+                    throw new RpcException(new Status(StatusCode.NotFound, $"Fragmented file with Hash: '{request.FileHash}' not found."));
+
+                var response = new FileDistributionResponse()
+                {
+                    FragmentOrder = { fileInfo.FragmentSequence }
+                };
+
+                Random random = new Random();
+                List<string> randomOrderedFragmentUris = new List<string>();
+
+                foreach (string fragmentHash in fileInfo.FragmentSequence)
+                {
+                    if (!_distributionService.TryGetFragmentDistribution(fragmentHash, out IEnumerable<Uri> fragmentUris))
+                    {
+                        string errorMessage = "";
+                        _logger.LogError(eventId, errorMessage);
+                        throw new RpcException(new Status(StatusCode.OutOfRange, errorMessage));
+                    }
+
+                    int exclusiveUpperBound = 0;
+                    randomOrderedFragmentUris.Clear();
+
+                    foreach (Uri fragmentUri in fragmentUris)
+                    {
+                        randomOrderedFragmentUris.Insert(random.Next(0, ++exclusiveUpperBound), fragmentUri.AbsoluteUri);
+                    }
+
+                    FragmentHolderList fragmentHolders = new FragmentHolderList()
+                    {
+                        EndPoints = { randomOrderedFragmentUris }
+                    };
+
+                    response.FragmentDistribution.Add(fragmentHash, fragmentHolders);
+                }
+
+                return response;
+            }
+
+            return Task.Run(Operation);
         }
 
         public override async Task DownloadFileFragment(IAsyncStreamReader<FragmentDownloadRequest> requestStream, IServerStreamWriter<FragmentDownloadResponse> responseStream, ServerCallContext context)
@@ -158,7 +188,7 @@ namespace MyTorrent.TorrentServer.Services
 
         public void Dispose()
         {
-            _lock.Dispose();
+            _distributionService.Dispose();
         }
     }
 }

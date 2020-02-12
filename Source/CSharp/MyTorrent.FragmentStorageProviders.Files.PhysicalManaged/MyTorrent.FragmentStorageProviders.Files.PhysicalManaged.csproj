@@ -4,12 +4,13 @@
     <Nullable>enable</Nullable>
     <TargetFramework>netstandard2.1</TargetFramework>
     <RootNamespace>MyTorrent.FragmentStorageProviders</RootNamespace>
-    <DocumentationFile>..\docs\MyTorrent.FragmentStorageProviders.Files.xml</DocumentationFile>
+    <DocumentationFile>..\docs\MyTorrent.FragmentStorageProviders.Files.PhysicalManaged.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.1" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.1.1" />
   </ItemGroup>
 
   <ItemGroup>

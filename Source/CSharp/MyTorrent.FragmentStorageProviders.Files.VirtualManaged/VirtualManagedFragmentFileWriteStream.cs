@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Security;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -9,7 +10,7 @@ namespace MyTorrent.FragmentStorageProviders
     partial class VirtualManagedFragmentFileStorageProvider
     {
         /// <summary>
-        /// TODO: DOCUMENT "internal class VirtualManagedFragmentFileWriteStream"
+        /// Stream which writes a fragment that is stored on the filesystem.
         /// </summary>
         internal class VirtualManagedFragmentFileWriteStream : FileStream
         {
@@ -18,23 +19,52 @@ namespace MyTorrent.FragmentStorageProviders
             private readonly VirtualManagedFileStorageSpaceAllocationToken? _allocationToken;
 
             /// <summary>
-            /// TODO: DOCUMENT "private VirtualManagedFragmentFileWriteStream(string normalizedFragmentHash, string fragmentFilePath, long length, VirtualManagedFragmentFileStorageProvider storageProvider, VirtualManagedFileStorageSpaceAllocationToken? allocationToken = null)"
+            /// Initializes a new <see cref="VirtualManagedFragmentFileWriteStream"/> instance.
             /// </summary>
             /// <param name="normalizedFragmentHash">
-            ///
+            /// Normalizes fragment hash value of the fragment that should be written.
             /// </param>
             /// <param name="fragmentFilePath">
-            ///
+            /// The file path where the content of the fragment should be temporarily stored.
             /// </param>
             /// <param name="length">
-            ///
+            /// Size of the fragment content in bytes.
             /// </param>
             /// <param name="storageProvider">
-            ///
+            /// Storage provider where the fragment should be stored.
             /// </param>
             /// <param name="allocationToken">
-            ///
+            /// If not <see langword="null"/> the resources of the allocated resources associated to 
+            /// this <paramref name="allocationToken"/> will be used to store the fragment.
             /// </param>
+            /// <exception cref="ArgumentNullException">
+            /// <paramref name="fragmentFilePath"/> is <see langword="null"/>.
+            /// </exception>
+            /// <exception cref="ArgumentException">
+            /// <paramref name="fragmentFilePath"/> is an empty string (""), contains only white space, or contains one or more
+            /// invalid characters. -or- <paramref name="fragmentFilePath"/> refers to a non-file device, such as "con:", "com1:",
+            /// "lpt1:", etc. in an NTFS environment.
+            /// </exception>
+            /// <exception cref="NotSupportedException">
+            /// path refers to a non-file device, such as "con:", "com1:", "lpt1:", etc. in a non-NTFS environment.
+            /// </exception>
+            /// <exception cref="IOException">
+            /// An I/O error, such as a file with the specified <paramref name="fragmentFilePath"/> already exists.
+            /// </exception>
+            /// <exception cref="SecurityException">
+            /// The caller does not have the required permission.
+            /// </exception>
+            /// <exception cref="DirectoryNotFoundException">
+            /// The specified <paramref name="fragmentFilePath"/> is invalid, such as being on an unmapped drive.
+            /// </exception>
+            /// <exception cref="UnauthorizedAccessException">
+            /// The access requested is not permitted by the operating system for the specified
+            /// path, such as when access is Write or ReadWrite and the file or directory is
+            /// set for read-only access.
+            /// </exception>
+            /// <exception cref="PathTooLongException">
+            /// The specified path, file name, or both exceed the system-defined maximum length.
+            /// </exception>
             private VirtualManagedFragmentFileWriteStream(
                 string normalizedFragmentHash,
                 string fragmentFilePath,
@@ -59,23 +89,47 @@ namespace MyTorrent.FragmentStorageProviders
             }
 
             /// <summary>
-            /// TODO: DOCUMENT "public static VirtualManagedFragmentFileWriteStream Create(string fragmentHash, long fragmentSize, VirtualManagedFragmentFileStorageProvider storageProvider, IStorageSpaceAllocationToken? allocationToken = null)"
+            /// Creates a <see cref="VirtualManagedFragmentFileWriteStream"/> instance to write the content.
             /// </summary>
             /// <param name="fragmentHash">
-            ///
+            /// Normalizes fragment hash value of the fragment that should be written.
             /// </param>
             /// <param name="fragmentSize">
-            ///
+            /// Size of the fragment content in bytes.
             /// </param>
             /// <param name="storageProvider">
-            ///
+            /// Storage provider where the fragment should be stored.
             /// </param>
             /// <param name="allocationToken">
-            ///
+            /// If not <see langword="null"/> the resources of the allocated resources associated to 
+            /// this <paramref name="allocationToken"/> will be used to store the fragment.
             /// </param>
             /// <returns>
-            ///
+            /// The <see cref="VirtualManagedFragmentFileWriteStream"/> to write the content of the fragment to.
             /// </returns>
+            /// <exception cref="ArgumentNullException">
+            /// <paramref name="fragmentHash"/> is <see langword="null"/>.
+            /// </exception>
+            /// <exception cref="ArgumentOutOfRangeException">
+            /// <paramref name="fragmentSize"/> is negative.
+            /// </exception>
+            /// <exception cref="ArgumentException">
+            /// An fragment with the specified <paramref name="fragmentHash"/> already exists.
+            /// -or- <paramref name="allocationToken"/> is not <see langword="null"/> and unknown to the <paramref name="storageProvider"/>.
+            /// </exception>
+            /// <exception cref="FormatException">
+            /// <paramref name="fragmentHash"/> contains an invalid hash value.
+            /// </exception>
+            /// <exception cref="IOException">
+            /// An other write operation already tries to write a fragment with the same hash value.
+            /// -or- Failed to open the filestream.
+            /// </exception>
+            /// <exception cref="StorageSpaceAllocationException">
+            /// Less storage space is available than <paramref name="fragmentSize"/> specifies as needed.
+            /// </exception>
+            /// <exception cref="ObjectDisposedException">
+            /// Allocation token is not <see langword="null"/> and was disposed.
+            /// </exception>
             public static VirtualManagedFragmentFileWriteStream Create(
                 string fragmentHash, 
                 long fragmentSize, 
@@ -118,10 +172,10 @@ namespace MyTorrent.FragmentStorageProviders
                             storageProvider, 
                             token);
                     }
-                    catch
+                    catch (Exception exception)
                     {
                         storageProvider.DeallocateStorageSpace(fragmentSize, token);
-                        throw;
+                        throw new IOException("Failed to open file stream.", exception);
                     }
 
                     storageProvider._writeOperations.Add(fragmentHash, writeStream);

@@ -21,8 +21,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyTorrent.FragmentStoragePr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyTorrent.FragmentStorageProviders.InMemory", "MyTorrent.FragmentStorageProviders.InMemory\MyTorrent.FragmentStorageProviders.InMemory.csproj", "{E7D977B4-7932-4261-8B81-B56DDD8691AC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyTorrent.FragmentStorageProviders.Files", "MyTorrent.FragmentStorageProviders.Files\MyTorrent.FragmentStorageProviders.Files.csproj", "{CA8477B0-F4FF-426A-A725-C8828D6E4972}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyTorrent.DistributionServices.Abstractions", "MyTorrent.DistributionServices.Abstractions\MyTorrent.DistributionServices.Abstractions.csproj", "{C1164194-9B1D-4A86-8E97-3BE57C4BDFB5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyTorrent.gRPC", "MyTorrent.gRPC\MyTorrent.gRPC.csproj", "{71C16C7F-1590-42B2-AAF1-8E587E07587F}"
@@ -57,9 +55,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyTorrent.DistributionServi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyTorrent.DistributionServices.DistributionMap", "MyTorrent.DistributionServices.DistributionMap\MyTorrent.DistributionServices.DistributionMap.csproj", "{4319FA5E-A256-40CC-A8DC-D2BB7F4B4015}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyTorrent.DistributionServices.Mock.Publisher", "MyTorrent.DistributionServices.Mock.Publisher\MyTorrent.DistributionServices.Mock.Publisher.csproj", "{FFB2463C-92E1-4FFD-8A27-612FE02B4181}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyTorrent.DistributionServices.Mock.Publisher", "MyTorrent.DistributionServices.Mock.Publisher\MyTorrent.DistributionServices.Mock.Publisher.csproj", "{FFB2463C-92E1-4FFD-8A27-612FE02B4181}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyTorrent.DistributionServices.Mock.Subscriber", "MyTorrent.DistributionServices.Mock.Subscriber\MyTorrent.DistributionServices.Mock.Subscriber.csproj", "{363B8EA1-2979-43D5-B626-D14B86974988}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyTorrent.DistributionServices.Mock.Subscriber", "MyTorrent.DistributionServices.Mock.Subscriber\MyTorrent.DistributionServices.Mock.Subscriber.csproj", "{363B8EA1-2979-43D5-B626-D14B86974988}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyTorrent.FragmentStorageProviders.Files.VirtualManaged", "MyTorrent.FragmentStorageProviders.Files.VirtualManaged\MyTorrent.FragmentStorageProviders.Files.VirtualManaged.csproj", "{EC09F9FB-AFA1-4093-981C-A4072EB001DF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyTorrent.FragmentStorageProviders.Files.PhysicalManaged", "MyTorrent.FragmentStorageProviders.Files.PhysicalManaged\MyTorrent.FragmentStorageProviders.Files.PhysicalManaged.csproj", "{35AA0291-9C17-4BBD-A974-08CDF55E33A1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -131,18 +133,6 @@ Global
 		{E7D977B4-7932-4261-8B81-B56DDD8691AC}.Release|x64.Build.0 = Release|Any CPU
 		{E7D977B4-7932-4261-8B81-B56DDD8691AC}.Release|x86.ActiveCfg = Release|Any CPU
 		{E7D977B4-7932-4261-8B81-B56DDD8691AC}.Release|x86.Build.0 = Release|Any CPU
-		{CA8477B0-F4FF-426A-A725-C8828D6E4972}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CA8477B0-F4FF-426A-A725-C8828D6E4972}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CA8477B0-F4FF-426A-A725-C8828D6E4972}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{CA8477B0-F4FF-426A-A725-C8828D6E4972}.Debug|x64.Build.0 = Debug|Any CPU
-		{CA8477B0-F4FF-426A-A725-C8828D6E4972}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{CA8477B0-F4FF-426A-A725-C8828D6E4972}.Debug|x86.Build.0 = Debug|Any CPU
-		{CA8477B0-F4FF-426A-A725-C8828D6E4972}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CA8477B0-F4FF-426A-A725-C8828D6E4972}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CA8477B0-F4FF-426A-A725-C8828D6E4972}.Release|x64.ActiveCfg = Release|Any CPU
-		{CA8477B0-F4FF-426A-A725-C8828D6E4972}.Release|x64.Build.0 = Release|Any CPU
-		{CA8477B0-F4FF-426A-A725-C8828D6E4972}.Release|x86.ActiveCfg = Release|Any CPU
-		{CA8477B0-F4FF-426A-A725-C8828D6E4972}.Release|x86.Build.0 = Release|Any CPU
 		{C1164194-9B1D-4A86-8E97-3BE57C4BDFB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C1164194-9B1D-4A86-8E97-3BE57C4BDFB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C1164194-9B1D-4A86-8E97-3BE57C4BDFB5}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -323,6 +313,30 @@ Global
 		{363B8EA1-2979-43D5-B626-D14B86974988}.Release|x64.Build.0 = Release|Any CPU
 		{363B8EA1-2979-43D5-B626-D14B86974988}.Release|x86.ActiveCfg = Release|Any CPU
 		{363B8EA1-2979-43D5-B626-D14B86974988}.Release|x86.Build.0 = Release|Any CPU
+		{EC09F9FB-AFA1-4093-981C-A4072EB001DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC09F9FB-AFA1-4093-981C-A4072EB001DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC09F9FB-AFA1-4093-981C-A4072EB001DF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{EC09F9FB-AFA1-4093-981C-A4072EB001DF}.Debug|x64.Build.0 = Debug|Any CPU
+		{EC09F9FB-AFA1-4093-981C-A4072EB001DF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EC09F9FB-AFA1-4093-981C-A4072EB001DF}.Debug|x86.Build.0 = Debug|Any CPU
+		{EC09F9FB-AFA1-4093-981C-A4072EB001DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC09F9FB-AFA1-4093-981C-A4072EB001DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC09F9FB-AFA1-4093-981C-A4072EB001DF}.Release|x64.ActiveCfg = Release|Any CPU
+		{EC09F9FB-AFA1-4093-981C-A4072EB001DF}.Release|x64.Build.0 = Release|Any CPU
+		{EC09F9FB-AFA1-4093-981C-A4072EB001DF}.Release|x86.ActiveCfg = Release|Any CPU
+		{EC09F9FB-AFA1-4093-981C-A4072EB001DF}.Release|x86.Build.0 = Release|Any CPU
+		{35AA0291-9C17-4BBD-A974-08CDF55E33A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35AA0291-9C17-4BBD-A974-08CDF55E33A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35AA0291-9C17-4BBD-A974-08CDF55E33A1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{35AA0291-9C17-4BBD-A974-08CDF55E33A1}.Debug|x64.Build.0 = Debug|Any CPU
+		{35AA0291-9C17-4BBD-A974-08CDF55E33A1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{35AA0291-9C17-4BBD-A974-08CDF55E33A1}.Debug|x86.Build.0 = Debug|Any CPU
+		{35AA0291-9C17-4BBD-A974-08CDF55E33A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35AA0291-9C17-4BBD-A974-08CDF55E33A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35AA0291-9C17-4BBD-A974-08CDF55E33A1}.Release|x64.ActiveCfg = Release|Any CPU
+		{35AA0291-9C17-4BBD-A974-08CDF55E33A1}.Release|x64.Build.0 = Release|Any CPU
+		{35AA0291-9C17-4BBD-A974-08CDF55E33A1}.Release|x86.ActiveCfg = Release|Any CPU
+		{35AA0291-9C17-4BBD-A974-08CDF55E33A1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -333,7 +347,6 @@ Global
 		{57CFC5D8-6805-4BD1-B682-BAE3FFF72FB0} = {2B3A3A15-F58C-458F-9490-6DD81161401E}
 		{DBF84330-825C-4989-8F54-0CC95C09E73C} = {38995EAC-9B30-41A9-B86E-D16F0659BD17}
 		{E7D977B4-7932-4261-8B81-B56DDD8691AC} = {38995EAC-9B30-41A9-B86E-D16F0659BD17}
-		{CA8477B0-F4FF-426A-A725-C8828D6E4972} = {38995EAC-9B30-41A9-B86E-D16F0659BD17}
 		{C1164194-9B1D-4A86-8E97-3BE57C4BDFB5} = {2B266250-E05A-4B9D-AAEF-833F0AD97D35}
 		{71C16C7F-1590-42B2-AAF1-8E587E07587F} = {663B708E-82A6-4013-9600-2F432FBDCADF}
 		{38995EAC-9B30-41A9-B86E-D16F0659BD17} = {663B708E-82A6-4013-9600-2F432FBDCADF}
@@ -353,6 +366,8 @@ Global
 		{4319FA5E-A256-40CC-A8DC-D2BB7F4B4015} = {2B266250-E05A-4B9D-AAEF-833F0AD97D35}
 		{FFB2463C-92E1-4FFD-8A27-612FE02B4181} = {2B266250-E05A-4B9D-AAEF-833F0AD97D35}
 		{363B8EA1-2979-43D5-B626-D14B86974988} = {2B266250-E05A-4B9D-AAEF-833F0AD97D35}
+		{EC09F9FB-AFA1-4093-981C-A4072EB001DF} = {38995EAC-9B30-41A9-B86E-D16F0659BD17}
+		{35AA0291-9C17-4BBD-A974-08CDF55E33A1} = {38995EAC-9B30-41A9-B86E-D16F0659BD17}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1087AB4B-9E8C-4C80-BB6C-0DCF25C4BD38}

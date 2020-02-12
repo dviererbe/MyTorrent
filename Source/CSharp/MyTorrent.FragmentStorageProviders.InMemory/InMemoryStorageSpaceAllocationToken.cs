@@ -11,8 +11,24 @@ namespace MyTorrent.FragmentStorageProviders
 {
     public partial class FragmentInMemoryStorageProvider
     {
+        /// <summary>
+        /// Token that is associated to an previously allocated part of in-memory storage space to that fragments can associated to.
+        /// </summary>
+        /// <remarks>
+        /// This can be used if you know e.g. you have to store 5 fragments with 5000 bytes total.
+        /// So you can allocate 5000 bytes and associate the allocation token to the fragments when storing them.
+        /// This grantees you the storage space.
+        /// 
+        /// Disposal of an <see cref="InMemoryStorageSpaceAllocationToken"/> will result in removal of all associated fragments. 
+        /// </remarks>
         internal class InMemoryStorageSpaceAllocationToken : IStorageSpaceAllocationToken
         {
+            /// <summary>
+            /// Unique Id of the <see cref="InMemoryStorageSpaceAllocationToken"/>.
+            /// </summary>
+            /// <remarks>
+            /// This is used to monitor allocations.
+            /// </remarks>
             public readonly Guid ID = Guid.NewGuid();
 
             private volatile bool _disposing = false;
@@ -24,13 +40,13 @@ namespace MyTorrent.FragmentStorageProviders
             private readonly FragmentInMemoryStorageProvider _storageProvider;
 
             /// <summary>
-            /// TODO: DOCUMENT "private InMemoryStorageSpaceAllocationToken(long size, FragmentInMemoryStorageProvider fragmentInMemoryStorageProvider)"
+            /// Initializes a new <see cref="InMemoryStorageSpaceAllocationToken"/> instance.
             /// </summary>
             /// <param name="size">
-            ///
+            /// How many bytes were allocated.
             /// </param>
             /// <param name="fragmentInMemoryStorageProvider">
-            ///
+            /// The storage provider whose storage space was allocated.
             /// </param>
             private InMemoryStorageSpaceAllocationToken(long size, FragmentInMemoryStorageProvider fragmentInMemoryStorageProvider)
             {
