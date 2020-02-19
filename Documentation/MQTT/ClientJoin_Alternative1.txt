@@ -1,0 +1,46 @@
+frame ClientJoin_Alternative1
+
+title Client Join (Alternative 1)
+
+participantgroup Tracker Server
+database "Distribution View" as TrackerView
+participant "MQTT Client" as Tracker
+end
+
+participantgroup Event Bus
+participant "MQTT Broker" as Broker
+end
+
+participantgroup Torrent Server
+participant "MQTT Client" as Torrent
+participant "Clock" as TorrentClock
+database "Distribution View" as TorrentView
+end
+
+participantgroup Registered Client
+participant "MQTT Client" as Client
+database "Distribution View" as ClientView
+end
+
+Torrent->>TorrentClock:Set timeout.
+alt
+Torrent-#redxBroker:PUBLISH clients/join/requested\n(ClientJoinRequested Event)
+else
+Torrent->>Broker:PUBLISH clients/join/requested\n(ClientJoinRequested Event)
+Broker-#redxTracker:PUBLISH clients/join/requested\n(ClientJoinRequested Event)
+
+end
+space 
+space 
+TorrentClock->>Torrent:Timeout exceeded.
+
+note over Torrent:Procedure failed.\nWaits for next\n//TrackerHello// Event.
+
+opt
+==Tracker Server reconnects or is replaced by an other Tracker Server==
+
+ref over TrackerView,Broker:**sd** TrackerServerStartup_StandardProcedure
+
+Broker->Torrent:PUBLISH tracker/hello\n(TrackerHello Event)
+ref over TrackerView,ClientView:**Use Case:** Client Join
+end

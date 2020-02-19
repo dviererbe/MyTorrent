@@ -1,0 +1,28 @@
+frame PublishFileInfo_StandardProcedure
+
+title Publish File Info (Standard Procedure)
+
+participantgroup Tracker Server
+participant "MQTT Client" as Tracker
+end
+
+participantgroup Event Bus
+participant "MQTT Broker" as Broker
+end
+
+participantgroup Registered Client
+participant "MQTT Client" as Torrent
+database Distribution View
+end
+
+Tracker->>Broker:PUBLISH files/info\n(FileInfoPublished Event)
+
+Broker->>Torrent:PUBLISH files/info\n(FileInfoPublished Event)
+
+Torrent->>Distribution View:store published //File Info//
+activate Distribution View
+space 
+deactivate Distribution View
+
+note over Distribution View: FileInfo was saved.
+

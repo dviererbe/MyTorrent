@@ -1,0 +1,20 @@
+frame TorrentServerStartup_Alternative1
+
+title Torrent Server Startup Procedure (Alternative 1)
+
+participantgroup Torrent Server
+participant "       MQTT Client       " as Torrent
+end
+
+participantgroup Event Bus
+participant "       MQTT Broker       " as Broker
+end
+
+
+create Torrent
+
+Torrent-#redxBroker: CONNECT
+
+space 
+
+destroy Torrent

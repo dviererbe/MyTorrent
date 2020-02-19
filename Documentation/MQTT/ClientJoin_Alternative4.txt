@@ -1,0 +1,82 @@
+frame ClientJoin_Alternative4
+
+title Client Join (Alternative 4)
+
+participantgroup Tracker Server
+participant "Clock" as TrackerClock
+database "Distribution View" as TrackerView
+participant "MQTT Client" as Tracker
+end
+
+participantgroup Event Bus
+participant "MQTT Broker" as Broker
+end
+
+participantgroup Torrent Server
+participant "MQTT Client" as Torrent
+participant "Clock" as TorrentClock
+database "Distribution View" as TorrentView
+end
+
+participantgroup Registered Client
+participant "MQTT Client" as Client
+database "Distribution View" as ClientView
+end
+
+Torrent->>Broker:PUBLISH clients/join/requested\n(ClientJoinRequested Event)
+Broker->>Tracker:PUBLISH clients/join/requested\n(ClientJoinRequested Event)
+Tracker->>TrackerView:Check if //Torrent Server//\ncan join the //Distribution\nService//.
+TrackerView-->>Tracker:Returns what the //Torrent\nServer// has to change to\nit's //Distribution View// to join\nthe //Distribution Service//.
+Tracker-->>Broker: PUBLISH clients/join/accepted\n(ClientJoinAccepted Event)
+Tracker->>TrackerClock:Set Timeout.
+Broker->>Torrent: PUBLISH clients/join/accepted\n(ClientJoinAccepted Event)
+opt 
+Broker->>Client: PUBLISH clients/join/accepted\n(ClientJoinAccepted Event)
+note over Client:Event is ignored.
+end
+Torrent->>TorrentView:Change //Distribution\nView// according to the \n//ClientJoinAccepted//\nEvent parameter.
+alt 
+note over TorrentView://File Infos// are removed \nwhich are in conflict with \nexisting //File Infos// and\nnew ones are added \nwhich the //Torrent Server// \ndidn't know about.\n\n//Fragments// are removed that\nwhich are in conflict with \nexisting //Fragments//.\n\n//Fragment Infos// are added \nwhich the //Torrent Server// \ndidn't know about.\n
+TorrentView-->>Torrent:Changes applied.
+Torrent->>TorrentClock:Set Timeout.
+alt
+Torrent-#redxBroker:PUBLISH clients/join/succeeded\n(ClientJoinSucceeded Event)
+else
+Torrent->>Broker:PUBLISH clients/join/succeeded\n(ClientJoinSucceeded Event)
+Broker-#redxTracker:PUBLISH clients/join/succeeded\n(ClientJoinSucceeded Event)
+end
+
+note over Torrent://Torrent Server// thinks\nit is now a //Registered \nClient//, but the 
+
+else 
+note over TorrentView:Conflict detected.
+TorrentView-->>Torrent:Error
+alt
+Torrent-#redxBroker:PUBLISH clients/join/failed\n(ClientJoinFailedEvent)
+else
+Torrent->>Broker:PUBLISH clients/join/failed\n(ClientJoinFailedEvent)
+Broker-#redxTracker:PUBLISH clients/join/failed\n(ClientJoinFailedEvent)
+end
+end
+
+parallel 
+TrackerClock->>Tracker:Timeout exceeded.
+TorrentClock->>Torrent:Timeout exceeded.
+parallel off
+
+
+
+
+
+
+
+note over Torrent:Procedure failed.\nWaits for next\n//TrackerHello// Event.
+
+opt
+==Tracker Server reconnects or is replaced by an other Tracker Server==
+
+
+ref over TrackerClock,Broker:**sd** TrackerServerStartup_StandardProcedure
+Broker->Torrent:PUBLISH tracker/hello\n(TrackerHello Event)
+ref over TrackerClock,ClientView:**Use Case:** Client Join
+end

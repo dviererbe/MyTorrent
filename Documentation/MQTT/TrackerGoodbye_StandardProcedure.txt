@@ -1,0 +1,25 @@
+frame TrackerGoodbye_StandardProcedure
+
+title Tracker Goodbye (Standard Procedure)
+
+participantgroup Tracker Server
+participant "MQTT Client" as Tracker
+end
+
+participantgroup Event Bus
+participant "MQTT Broker" as Broker
+end
+
+participantgroup Registered Client
+participant "MQTT Client" as Torrent
+end
+
+Tracker->>Broker:PUBLISH tracker/goodbye\n(//TrackerGoodbye// Event)
+Broker->>Torrent:PUBLISH tracker/goodbye\n(//TrackerGoodbye// Event)
+
+Tracker->>Broker:DISCONNECT
+
+destroyafter Tracker
+
+note over Torrent:Client is no longer registered\nand waits now for the next\n//TrackerHello// Event.
+

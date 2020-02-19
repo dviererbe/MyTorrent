@@ -1,0 +1,34 @@
+frame TrackerServerStartup_Alternative3
+
+title Tracker Server Startup Procedure (Alternative 3)
+
+participantgroup Tracker Server
+participant "MQTT Client" as Tracker
+end
+
+participantgroup Event Bus
+participant "MQTT Broker" as Broker
+end
+
+note over Broker:MQTT Broker was started\nbefore the //Tracker Server//\ntries to connect to it.\n\nNo other //Tracker Server//\nis connected to the //Event Bus//.
+
+create Tracker
+
+Tracker->>Broker: CONNECT
+
+par 
+Tracker->>Broker: SUBSCRIBE clients/join/requested\n(ClientJoinRequested Event)
+Tracker->>Broker: SUBSCRIBE clients/join/succeeded\n(ClientJoinSucceeded Event)
+Tracker->>Broker: SUBSCRIBE clients/join/failed\n(ClientJoinFailed Event)
+Tracker->>Broker: SUBSCRIBE clients/goodbye\n(ClientGoodbye Event)
+Tracker->>Broker: SUBSCRIBE fragments/distribution/requested\n(FragmentDistributionRequested Event)
+Tracker->>Broker: SUBSCRIBE fragments/distribution/obtained\n(FragmentDistributionObtained Event)
+Tracker->>Broker: SUBSCRIBE fragments/distribution/failed\n(FragmentDistributionFailed Event)
+end
+
+Tracker-#redxBroker:PUBLISH tracker/hello\n(TrackerHello Event)
+
+Tracker->>Broker: DISCONNECT
+space 
+
+destroy Tracker

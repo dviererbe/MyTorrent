@@ -1,0 +1,27 @@
+frame TorrentServerStartup_StandardProcedure
+
+title Torrent Server Startup Procedure (StandardProcedure)
+
+participantgroup Torrent Server
+participant "MQTT Client" as Torrent
+end
+
+participantgroup Event Bus
+participant "MQTT Broker" as Broker
+end
+Torrent->>Broker: CONNECT
+
+par 
+Torrent->>Broker: SUBSCRIBE tracker/hello\n(TrackerHello Event)
+Torrent->>Broker: SUBSCRIBE tracker/goodbye\n(TrackerGoodbye Event)
+Torrent->>Broker: SUBSCRIBE clients/join/accepted\n(ClientJoinAccepted Event)
+Torrent->>Broker: SUBSCRIBE clients/join/denied\n(ClientJoinDenied Event)
+Torrent->>Broker: SUBSCRIBE clients/registered\n(ClientRegistered Event)
+Torrent->>Broker: SUBSCRIBE clients/goodbye\n(ClientGoodbye Event)
+Torrent->>Broker: SUBSCRIBE files/info\n(FileInfoPublished Event)
+Torrent->>Broker: SUBSCRIBE fragments/distribution/started\n(FragmentDistributionStarted Event)
+Torrent->>Broker: SUBSCRIBE fragments/distribution/delivered\n(FragmentDistributionDelivered Event)
+Torrent->>Broker: SUBSCRIBE fragments/distribution/ended\n(FragmentDistributionEnded Event)
+end
+
+ref over Torrent,Broker:**Use Case:** Client Join\n(//Torrent Server// tries to get a //Registered Client//)

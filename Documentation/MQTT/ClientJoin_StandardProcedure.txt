@@ -1,0 +1,55 @@
+frame ClientJoin_StandardProcedure
+
+title Client Join (Standard Procedure)
+
+participantgroup Tracker Server
+database "Distribution View" as TrackerView
+participant "MQTT Client" as Tracker
+end
+
+participantgroup Event Bus
+participant "MQTT Broker" as Broker
+end
+
+participantgroup Torrent Server
+participant "MQTT Client" as Torrent
+database "Distribution View" as TorrentView
+end
+
+participantgroup Registered Client
+participant "MQTT Client" as Client
+database "Distribution View" as ClientView
+end
+
+Torrent->>Broker:PUBLISH clients/join/requested\n(ClientJoinRequested Event)
+Broker->>Tracker:PUBLISH clients/join/requested\n(ClientJoinRequested Event)
+Tracker->>TrackerView:Check if //Torrent Server//\ncan join the //Distribution\nService//.
+TrackerView-->>Tracker:Returns what the //Torrent\nServer// has to change to\nit's //Distribution View// to join\nthe //Distribution Service//.
+Tracker-->>Broker: PUBLISH clients/join/accepted\n(ClientJoinAccepted Event)
+Broker->>Torrent: PUBLISH clients/join/accepted\n(ClientJoinAccepted Event)
+opt 
+Broker->>Client: PUBLISH clients/join/accepted\n(ClientJoinAccepted Event)
+note over Client:Event is ignored.
+end
+Torrent->>TorrentView:Change //Distribution\nView// according to the \n//ClientJoinAccepted//\nEvent parameter.
+note over TorrentView://File Infos// are removed \nwhich are in conflict with \nexisting //File Infos// and\nnew ones are added \nwhich the //Torrent Server// \ndidn't know about.\n\n//Fragments// are removed that\nwhich are in conflict with \nexisting //Fragments//.\n\n//Fragment Infos// are added \nwhich the //Torrent Server// \ndidn't know about.\n
+TorrentView-->>Torrent:Changes applied.
+Torrent->>Broker:PUBLISH clients/join/succeeded\n(ClientJoinSucceeded Event)
+Broker->>Tracker:PUBLISH clients/join/succeeded\n(ClientJoinSucceeded Event)
+note over Torrent://Torrent Server// is \nnow a //Registered \nClient//.
+Tracker->>TrackerView:Apply changes to the\n//Distribution View//.
+note over TrackerView:New //File Infos// and \n//Fragment// Infos are \nadded.\n\nInformation about the \n//Endpoints// and stored \n//Fragments// of the new \n//Registered Client// are \nadded to the //Distribution\nView//.
+TrackerView-->>Tracker:Changes applied.
+Tracker->>Broker:PUBLISH clients/registered\n(ClientRegistered Event)
+Broker->>Torrent:PUBLISH clients/registered\n(ClientRegistered Event)
+Broker->>Client:PUBLISH clients/registered\n(ClientRegistered Event)
+Client->>ClientView:Change //Distribution\nView// according to the \n//ClientRegistered//\nEvent parameter.
+
+
+
+
+
+
+note over ClientView:New //File Infos// and \n//Fragment// Infos are \nadded.\n\nInformation about the \n//Endpoints// and stored \n//Fragments// of the new \n//Registered Client// are \nadded to the //Distribution\nView//.
+ClientView-->>Client:Change succeeded.
+note over Client://Torrent Server// is \nnow a //Registered \nClient// for the other\n//Registered Clients//.

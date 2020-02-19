@@ -1,0 +1,71 @@
+frame ClientJoin_Alternative2
+
+title Client Join (Alternative 2)
+
+participantgroup Tracker Server
+participant "Clock" as TrackerClock
+database "Distribution View" as TrackerView
+participant "MQTT Client" as Tracker
+end
+
+participantgroup Event Bus
+participant "MQTT Broker" as Broker
+end
+
+participantgroup Torrent Server
+participant "MQTT Client" as Torrent
+participant "Clock" as TorrentClock
+database "Distribution View" as TorrentView
+end
+
+participantgroup Registered Client
+participant "MQTT Client" as Client
+database "Distribution View" as ClientView
+end
+
+Torrent->>TorrentClock:Set timeout.
+
+Torrent->>Broker:PUBLISH clients/join/requested\n(ClientJoinRequested Event)
+Broker->>Tracker:PUBLISH clients/join/requested\n(ClientJoinRequested Event)
+Tracker->>TrackerView:Check if //Torrent Server//\ncan join the //Distribution\nService//.
+
+
+alt
+TrackerView-->>Tracker:Returns what the //Torrent\nServer// has to change to\nit's //Distribution View// to join\nthe //Distribution Service//.
+Tracker->>TrackerClock:Set timeout.
+alt 
+Tracker--#redxBroker: PUBLISH clients/join/accepted\n(ClientJoinAccepted Event)
+else 
+Tracker-->>Broker: PUBLISH clients/join/accepted\n(ClientJoinAccepted Event)
+Broker-#redxTorrent: PUBLISH clients/join/accepted\n(ClientJoinAccepted Event)
+end
+else
+TrackerView-->>Tracker:Returns that the //Torrent\nServer// can not join the\n//Distribution Service//,\nbecause conflicts were\nfound.
+alt 
+Tracker--#redxBroker:PUBLISH clients/join/denied\n(ClientJoinDeniedEvent)
+else 
+Tracker-->>Broker:PUBLISH clients/join/denied\n(ClientJoinDeniedEvent)
+Broker-#redxTorrent:PUBLISH clients/join/denied\n(ClientJoinDeniedEvent)
+end
+end
+
+space 
+space 
+parallel 
+TrackerClock->>Tracker:Timeout exceeded.
+TorrentClock->>Torrent:Timeout exceeded.
+parallel off
+
+note over Torrent:Procedure failed.\nWaits for next\n//TrackerHello// Event.
+
+opt
+==Tracker Server reconnects or is replaced by an other Tracker Server==
+
+
+
+
+
+ref over TrackerClock,Broker:**sd** TrackerServerStartup_StandardProcedure
+Broker->Torrent:PUBLISH tracker/hello\n(TrackerHello Event)
+ref over TrackerClock,ClientView:**Use Case:** Client Join
+end

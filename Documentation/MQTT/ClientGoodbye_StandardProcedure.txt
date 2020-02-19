@@ -1,0 +1,35 @@
+frame ClientGoodbye_StandardProcedure
+
+title Client Goodbye (Standard Procedure)
+
+participantgroup Tracker Server
+database "Distribution View" as TrackerView
+participant "MQTT Client" as Tracker
+end
+
+participantgroup Event Bus
+participant "MQTT Broker" as Broker
+end
+
+participantgroup Disconnecting Registered Client
+participant "            MQTT Client            " as Torrent1
+end
+
+participantgroup Other Registered Client
+participant "MQTT Client" as Torrent2
+database "Distribution View" as Torrent2View
+end
+
+Torrent1->>Broker:PUBLISH clients/goodbye\n(//ClientGoodbye// Event)
+
+parallel 
+Broker->>Tracker:PUBLISH clients/goodbye\n(//ClientGoodbye// Event)
+Broker->>Torrent2:PUBLISH clients/goodbye\n(//ClientGoodbye// Event)
+
+
+par
+Tracker->>TrackerView:remove Client from\n//Distribution View//
+Torrent2->>Torrent2View:remove Client from\n//Distribution View//
+end
+
+

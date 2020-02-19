@@ -1,0 +1,69 @@
+frame TorrentServerStartup_Alternative2
+
+title Torrent Server Startup Procedure (Alternative 2)
+
+participantgroup Torrent Server
+participant "MQTT Client" as Torrent
+end
+
+participantgroup Event Bus
+participant "MQTT Broker" as Broker
+end
+
+create Torrent
+
+Torrent->>Broker: CONNECT
+
+alt
+Torrent->>Broker: SUBSCRIBE tracker/hello\n(TrackerHello Event)
+alt
+Torrent->>Broker: SUBSCRIBE tracker/goodbye\n(TrackerGoodbye Event)
+alt
+Torrent->>Broker: SUBSCRIBE clients/join/accepted\n(ClientJoinAccepted Event)
+alt
+Torrent->>Broker: SUBSCRIBE clients/join/denied\n(ClientJoinDenied Event)
+alt
+Torrent->>Broker: SUBSCRIBE clients/registered\n(ClientRegistered Event)
+alt
+Torrent->>Broker: SUBSCRIBE clients/goodbye\n(ClientGoodbye Event)
+alt 
+Torrent->>Broker: SUBSCRIBE files/info\n(FileInfoPublished Event)
+alt
+Torrent->>Broker: SUBSCRIBE fragments/distribution/started\n(FragmentDistributionStarted Event)
+alt
+Torrent->>Broker: SUBSCRIBE fragments/distribution/delivered\n(FragmentDistributionDelivered Event)
+Torrent-#redxBroker: SUBSCRIBE fragments/distribution/ended\n(FragmentDistributionEnded Event)
+else 
+Torrent-#redxBroker: SUBSCRIBE fragments/distribution/delivered\n(FragmentDistributionDelivered Event) 
+end
+else
+Torrent-#redxBroker: SUBSCRIBE fragments/distribution/started\n(FragmentDistributionStarted Event)
+end
+else
+Torrent-#redxBroker: SUBSCRIBE files/info\n(FileInfoPublished Event)
+end
+else 
+Torrent-#redxBroker: SUBSCRIBE files/info\n(FileInfoPublished Event)
+end 
+else 
+Torrent-#redxBroker: SUBSCRIBE clients/registered\n(ClientRegistered Event)
+end
+else
+Torrent-#redxBroker: SUBSCRIBE clients/join/denied\n(ClientJoinDenied Event)
+end
+else 
+Torrent-#redxBroker: SUBSCRIBE clients/join/accepted\n(ClientJoinAccepted Event)
+end
+else 
+Torrent-#redxBroker: SUBSCRIBE tracker/goodbye\n(TrackerGoodbye Event)
+end
+else
+Torrent-#redxBroker: SUBSCRIBE tracker/hello\n(TrackerHello Event)
+end
+
+note over Torrent:Subscribing to any\nevent relevant for\nthe //Torrent Server//\nfailed. 
+
+Torrent->>Broker: DISCONNECT
+space 
+
+destroy Torrent

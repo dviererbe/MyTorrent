@@ -1,0 +1,55 @@
+frame FragmentDistribution_StandardProcedure
+
+title Fragment Distribution (Standard Procedure)
+
+participantgroup Tracker Server
+database "Fragment Storage" as TrackerStorage
+database "Distribution View" as TrackerView
+participant "MQTT Client" as Tracker
+end
+
+participantgroup Event Bus
+participant "MQTT Broker" as Broker
+end
+
+participantgroup Registered Client
+participant "MQTT Client" as Client
+database "Distribution View" as ClientView
+database "Fragment Storage" as ClientStorage
+end
+
+Tracker->>Broker:PUBLISH fragments/distribution/started\n(FragmentDistributionStarted Event)
+Broker->>Client:PUBLISH fragments/distribution/started\n(FragmentDistributionStarted Event)
+
+
+Client->>ClientView:Checks if Client should \nstore the //Fragment//.\n(Distribution Algorithm \nto achieve a nearly \nuniform distribution to \nall //Registered Clients//.)
+Client<<--ClientView:Should store Fragment.
+Client->>ClientStorage:Checks if Client can store Fragment.
+Client<<--ClientStorage:Client can store Fragment.
+Broker<<-Client:PUBLISH fragments/distribution/requested\n(FragmentDistributionRequested Event)
+Tracker<<-Broker:PUBLISH fragments/distribution/requested\n(FragmentDistributionRequested Event)
+
+TrackerView<<-Tracker:Calculate which //Registered \nClients// the //Fragment// is \ndistributed to.
+TrackerView-->>Tracker:return Distribution recommendation
+TrackerStorage<<-Tracker:get //Fragment// content
+TrackerStorage-->>Tracker:returns //Fragment// content
+Tracker->>Broker:PUBLISH fragments/distribution/delivered\n(FragmentDistributionDelivered Event)
+Broker->>Client:PUBLISH fragments/distribution/delivered\n(FragmentDistributionDelivered Event)
+Client->>ClientStorage:Temporarily stores //Fragment// content.
+Client<<--ClientStorage:Fragment stored
+Broker<<-Client:PUBLISH fragments/distribution/obtained\n(FragmentDistributionObtained Event)
+Tracker<<-Broker:PUBLISH fragments/distribution/obtained\n(FragmentDistributionObtained Event)
+Tracker->>Broker:PUBLISH fragments/distribution/ended\n(FragmentDistributionEnded Event)
+Broker->>Client:PUBLISH fragments/distribution/ended\n(FragmentDistributionEnded Event)
+parallel 
+Tracker->>TrackerView:Update //Distribution View//
+Client->>ClientView:Update //Distribution View//
+parallel off
+parallel 
+Client<<--ClientView:updated
+Tracker<<--TrackerView:updated
+parallel off
+parallel 
+Tracker->>TrackerStorage:Remove distributed //Fragment//.
+Client->ClientStorage:Persist temporarily stored //Fragments//.
+parallel off

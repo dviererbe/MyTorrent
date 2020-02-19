@@ -1,0 +1,56 @@
+frame TrackerServerStartup_Alternative2
+
+title Tracker Server Startup Procedure (Alternative 2)
+
+participantgroup Tracker Server
+participant "MQTT Client" as Tracker
+end
+
+participantgroup Event Bus
+participant "MQTT Broker" as Broker
+end
+
+note over Broker:MQTT Broker was started\nbefore the //Tracker Server//\ntries to connect to it.\n\nNo other //Tracker Server//\nis connected to the //Event Bus//.
+
+create Tracker
+
+Tracker->>Broker: CONNECT
+
+alt
+Tracker->>Broker: SUBSCRIBE clients/join/requested\n(ClientJoinRequested Event)
+alt
+Tracker->>Broker: SUBSCRIBE clients/join/succeeded\n(ClientJoinSucceeded Event)
+alt
+Tracker->>Broker: SUBSCRIBE clients/join/failed\n(ClientJoinFailed Event)
+alt
+Tracker->>Broker: SUBSCRIBE clients/goodbye\n(ClientGoodbye Event)
+alt
+Tracker->>Broker: SUBSCRIBE fragments/distribution/requested\n(FragmentDistributionRequested Event)
+alt
+Tracker->>Broker: SUBSCRIBE fragments/distribution/obtained\n(FragmentDistributionObtained Event)
+Tracker-#redxBroker: SUBSCRIBE fragments/distribution/failed\n(FragmentDistributionFailed Event)
+else 
+Tracker-#redxBroker: SUBSCRIBE fragments/distribution/obtained\n(FragmentDistributionObtained Event)
+end
+else
+Tracker-#redxBroker: SUBSCRIBE fragments/distribution/requested\n(FragmentDistributionRequested Event)
+end
+else 
+Tracker-#redxBroker: SUBSCRIBE clients/goodbye\n(ClientGoodbye Event)
+end
+else 
+Tracker-#redxBroker: SUBSCRIBE clients/join/succeeded\n(ClientJoinSucceeded Event)
+end
+else
+Tracker-#redxBroker: SUBSCRIBE clients/join/succeeded\n(ClientJoinSucceeded Event)
+end
+else
+Tracker-#redxBroker: SUBSCRIBE clients/join/requested\n(ClientJoinRequested Event)
+end
+
+note over Tracker:Subscribing to any\nevent relevant for\nthe //Tracker Server//\nfailed. 
+
+Tracker->>Broker: DISCONNECT
+space 
+
+destroy Tracker

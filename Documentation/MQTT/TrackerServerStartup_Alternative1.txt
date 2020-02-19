@@ -1,0 +1,21 @@
+frame TrackerServerStartup_Alternative1
+
+title Tracker Server Startup Procedure (Alternative 1)
+
+participantgroup Tracker Server
+participant "MQTT Client" as Tracker
+end
+
+participantgroup Event Bus
+participant "MQTT Broker" as Broker
+end
+
+note over Broker:No other //Tracker Server// is connected\nto the //Event Bus//.
+
+create Tracker
+
+Tracker-#redxBroker: CONNECT
+
+space 
+
+destroy Tracker

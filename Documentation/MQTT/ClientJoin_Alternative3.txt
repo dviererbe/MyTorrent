@@ -1,0 +1,44 @@
+frame ClientJoin_Alternative3
+
+title Client Join (Alternative 3)
+
+participantgroup Tracker Server
+database "Distribution View" as TrackerView
+participant "MQTT Client" as Tracker
+end
+
+participantgroup Event Bus
+participant "MQTT Broker" as Broker
+end
+
+participantgroup Torrent Server
+participant "MQTT Client" as Torrent
+database "Distribution View" as TorrentView
+end
+
+participantgroup Registered Client
+participant "MQTT Client" as Client
+database "Distribution View" as ClientView
+end
+
+Torrent->>Broker:PUBLISH clients/join/requested\n(ClientJoinRequested Event)
+Broker->>Tracker:PUBLISH clients/join/requested\n(ClientJoinRequested Event)
+Tracker->>TrackerView:Check if //Torrent Server//\ncan join the //Distribution\nService//.
+TrackerView-->>Tracker:Returns that the //Torrent\nServer// can not join the\n//Distribution Service//,\nbecause conflicts were\nfound.
+Tracker-->>Broker:PUBLISH clients/join/denied\n(ClientJoinDeniedEvent)
+Broker->>Torrent:PUBLISH clients/join/denied\n(ClientJoinDeniedEvent)
+opt 
+Broker->>Client:PUBLISH clients/join/denied\n(ClientJoinDeniedEvent)
+note over Client:Event is ignored.
+end
+
+note over Torrent:Procedure failed.\nWaits for next\n//TrackerHello// Event.
+
+opt
+==Tracker Server reconnects or is replaced by an other Tracker Server==
+
+
+ref over TrackerView,Broker:**sd** TrackerServerStartup_StandardProcedure
+Broker->Torrent:PUBLISH tracker/hello\n(TrackerHello Event)
+ref over TrackerView,ClientView:**Use Case:** Client Join
+end
