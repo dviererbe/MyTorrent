@@ -98,8 +98,8 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Source\CSharp\MyTorrent.gRPC\MyTorrent.gRPC.csproj">
-      <Project>{f929cdf4-482e-4376-b1be-f77defe8a325}</Project>
+    <ProjectReference Include="..\MyTorrent.gRPC\MyTorrent.gRPC.csproj">
+      <Project>{8fd3e19d-3b70-47de-8139-a60980222561}</Project>
       <Name>MyTorrent.gRPC</Name>
     </ProjectReference>
   </ItemGroup>

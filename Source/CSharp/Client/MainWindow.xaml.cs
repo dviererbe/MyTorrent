@@ -419,10 +419,13 @@ namespace UserClient
 	  using (FileStream fileStream = new FileStream(di.FullName + "/" + filetableitem.FileName, FileMode.CreateNew, FileAccess.Write))
 	  {
 		long packetnumber = (filetableitem.FileSize + networkinfo.FragmentSize - 1) / networkinfo.FragmentSize;
-		int counter = 0;
+		//int counter = 0;
 		fileStream.Seek(0, SeekOrigin.Begin);
+
+		//für jedes Fragment in meiner Verteilung
 		foreach (string fragmenthash in fileDistRes.FragmentOrder)
 		{
+
 		  string choosenEndpoint = Helper.GetRandomElement(fileDistRes.FragmentDistribution[fragmenthash].EndPoints);
 		  if (!Helper.TryUriParse(choosenTorrent, out (string host, int port) endpointHostPort))
 		  {
