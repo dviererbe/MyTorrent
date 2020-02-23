@@ -21,6 +21,6 @@ namespace MyTorrent.DistributionServices
         /// All fragments, expect the last fragment of an fragmented file have to be exactly of this size.
         /// But the last fragment must not be empty.
         /// </remarks>
-        public long FragmentSize { get; set; } = 80_000;
+        public long FragmentSize { get; set; } = 1024;
     }
 }

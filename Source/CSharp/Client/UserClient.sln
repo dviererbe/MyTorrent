@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29418.71
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserClient", "UserClient.csproj", "{B6BC8FA9-9292-4288-B564-2E564517FAF0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyTorrent.gRPC", "..\Source\CSharp\MyTorrent.gRPC\MyTorrent.gRPC.csproj", "{F929CDF4-482E-4376-B1BE-F77DEFE8A325}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B6BC8FA9-9292-4288-B564-2E564517FAF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6BC8FA9-9292-4288-B564-2E564517FAF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6BC8FA9-9292-4288-B564-2E564517FAF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6BC8FA9-9292-4288-B564-2E564517FAF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F929CDF4-482E-4376-B1BE-F77DEFE8A325}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F929CDF4-482E-4376-B1BE-F77DEFE8A325}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F929CDF4-482E-4376-B1BE-F77DEFE8A325}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F929CDF4-482E-4376-B1BE-F77DEFE8A325}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {63A0CD20-7611-451F-A203-392415709FD1}
+	EndGlobalSection
+EndGlobal

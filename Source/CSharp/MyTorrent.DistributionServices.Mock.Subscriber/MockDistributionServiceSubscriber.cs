@@ -258,7 +258,7 @@ namespace MyTorrent.DistributionServices
                 //TODO: release managed resources;
             }
 
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
     }
 }

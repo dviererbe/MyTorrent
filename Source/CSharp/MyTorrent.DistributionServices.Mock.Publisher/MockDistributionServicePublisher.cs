@@ -70,13 +70,13 @@ namespace MyTorrent.DistributionServices
             }
         }
 
-        /// <summary>
-        /// Gets the uris of the endpoints where the fragments are distributed to and can be retrived from.
-        /// </summary>
-        /// <exception cref="ObjectDisposedException">
-        /// This method was called after the <see cref="MockDistributionServicePublisher"/> was disposed.
-        /// </exception>
-        public IReadOnlyCollection<Uri> DistributionEndPoints => Array.Empty<Uri>();
+    /// <summary>
+    /// Gets the uris of the endpoints where the fragments are distributed to and can be retrived from.
+    /// </summary>
+    /// <exception cref="ObjectDisposedException">
+    /// This method was called after the <see cref="MockDistributionServicePublisher"/> was disposed.
+    /// </exception>
+    public IReadOnlyCollection<Uri> DistributionEndPoints => new Uri[1] { new Uri("gRPC://127.0.0.1:50051") };
 
 
         /// <summary>
@@ -235,7 +235,7 @@ namespace MyTorrent.DistributionServices
                 return Task.FromException<IEnumerable<Uri>>(exception);
             }
 
-            return Task.FromResult<IEnumerable<Uri>>(Array.Empty<Uri>());
+            return Task.FromResult<IEnumerable<Uri>>(new Uri[1] { new Uri("gRPC://127.0.0.1:50051/" + fragmentHash)});
         }
 
         /// <summary>
@@ -283,7 +283,7 @@ namespace MyTorrent.DistributionServices
                 return Task.FromException<IEnumerable<Uri>>(exception);
             }
 
-            return Task.FromResult<IEnumerable<Uri>>(Array.Empty<Uri>());
+            return Task.FromResult<IEnumerable<Uri>>(new Uri[1] { new Uri("gRPC://127.0.0.1:50051/" + fragmentHash) });
         }
 
         /// <summary>
