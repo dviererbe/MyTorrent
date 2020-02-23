@@ -33,16 +33,17 @@
 			</DataGrid>
 		</Grid>
 		<StackPanel Grid.Column ="2">
-			<TextBox x:Name="IP_TEXT" Text="127.0.0.1:50052"/>
-			<Button Content="Bild laden" Command="{Binding LoadPictureFromFile}"/>
-			<Button Content="Bild laden2" Command="{Binding LoadPictureFromFile2}"/>
+			<StackPanel Orientation="Horizontal">
+				<Label Content="Trackerserver:   "/>
+				<TextBox x:Name="IP_TEXT" Text="127.0.0.1:50052"/>
+			</StackPanel> 
+			<Button Content="Bild zum Upload auswählen" Command="{Binding LoadPictureFromFile}"/>
 			<Button Content="TorrentInfos aktualisieren" Click="UpdateNetworkInfo"/>
 			<Button Content="Bild im Torrentnetz speichern" Click="SaveFileToNetworkExecuteAsync"/>
 			<Button Content="Meine Bilder im Torrentnetz anzeigen" Click="LoadLocalNetworkFileInformation"/>
 			<Button Content="Gewählte Actionen durchführen" Click="DownloadFilesFromTorrentNetwork"/>
-			<Button Content="Bild lokal abspeichern" Command="{Binding SavePictureToFileSystem}"/>
-			<Button Content="Splittest" Command="{Binding SplitTest}"/>
-
+			<Button Content="Schließen" Click="Close"/>
+			<!--<Button Content="Splittest" Command="{Binding SplitTest}"/>-->
 			<!--<ItemsControl ItemsSource="{Binding FileList}">
 			<ItemsControl.ItemTemplate>
 			<DataTemplate>

@@ -199,7 +199,8 @@ namespace MyTorrent.TorrentServer.Services
                 byte[] data = await storageProvider.GetFragmentAsync(request.FragmentHash);
 
                 FragmentDownloadResponse response = new FragmentDownloadResponse();
-                response.Data.CopyTo(data, 0);
+        
+        response.Data = Google.Protobuf.ByteString.CopyFrom(data);
 
                 return response;
             }

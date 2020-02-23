@@ -34,11 +34,24 @@ namespace UserClient
   /// </summary>
   public partial class MainWindow : Window, INotifyPropertyChanged
   {
+	/// <summary>
+	/// Implemented Eventhandler aus dem <see cref="INotifyPropertyChanged"/>
+	/// </summary>
 	public event PropertyChangedEventHandler PropertyChanged;
 
-	static private Random rnd = new Random();
+	/// <summary>
+	/// Random number generator
+	/// </summary>
+	static private Random random = new Random();
 
+	/// <summary>
+	/// Private list for the items which are displayeds.
+	/// </summary>
 	private ObservableCollection<FileTableItem> fileTable = null;
+
+	/// <summary>
+	/// Public list for the items which are displayed.
+	/// </summary>
 	public ObservableCollection<FileTableItem> FileTable
 	{
 	  get => this.fileTable;
@@ -52,8 +65,19 @@ namespace UserClient
 	  }
 	}
 
+	/// <summary>
+	/// Determines wether the Image for th upload is visible or not
+	/// </summary>
 	public Visibility ImageVisibility { get; set; } = Visibility.Visible;
+
+	/// <summary>
+	/// Determines wether the DataGrid for th download is visible or not
+	/// </summary>
 	public Visibility DataGridVisibility { get; set; } = Visibility.Collapsed;
+
+	/// <summary>
+	/// Boolean setter which toggles between Image and DataGrid visibility
+	/// </summary>
 	public bool IsDataGridVisible
 	{
 	  set
@@ -66,16 +90,19 @@ namespace UserClient
 	}
 
 
-
+	/// <summary>
+	/// Commmand to load e picture from a file.
+	/// </summary>
 	public MyCommand LoadPictureFromFile { get; set; } = null;
-	public MyCommand LoadPictureFromFile2 { get; set; } = null;
-	public MyCommand SavePictureToTorrentNetwork { get; set; } = null;
-	public MyCommand FindPictureInTorrentNetwork { get; set; } = null;
-	public MyCommand LoadAndComposePicture { get; set; } = null;
-	public MyCommand SavePictureToFileSystem { get; set; } = null;
-	public MyCommand SplitTest { get; set; } = null;
+	
+	/// <summary>
+	/// Private image to show on upload site.
+	/// </summary>
+	private BitmapImage source = null;
 
-	BitmapImage source = null;
+	/// <summary>
+	/// Public image to show on upload site.
+	/// </summary>
 	public BitmapImage Source
 	{
 	  get
@@ -91,62 +118,27 @@ namespace UserClient
 		}
 	  }
 	}
-
+	   
+	/// <summary>
+	/// List of all pictures that are uploaded in the torren.
+	/// </summary>
 	private MapField<string, MapField<string, FragmentHolderList>> myUploads;
 
+	/// <summary>
+	/// Constructor
+	/// </summary>
 	public MainWindow()
 	{
 	  InitializeComponent();
 	  this.DataContext = this;
-	  this.InitCommands();
-	  Console.WriteLine("START");
-	}
-
-	private void InitCommands()
-	{
-	  Predicate<object> pictureLoaded = new Predicate<object>((object obj) => this.Source != null);
-
 	  this.LoadPictureFromFile = new MyCommand(this.LoadPicture);
-	  //this.SavePictureToTorrentNetwork = new MyCommand(this.SaveNetworkExecuteAsync, pictureLoaded);
-	  this.SplitTest = new MyCommand(this.split, pictureLoaded);
-
-
-	  this.LoadPictureFromFile2 = new MyCommand(this.LoadPicture, pictureLoaded);
-
 	}
 
-	#region Test zum Datei splitten. Nicht wichtig für das eigentliche Programm
-	private void split(object obj)
-	{
-	  SplitFile(this.Source.UriSource.OriginalString, 1024, @"C:\Users\Dirk Neumann\Desktop\Splits");
-	}
-	public static void SplitFile(string inputFile, int chunkSize, string path)
-	{
-	  const int BUFFER_SIZE = 20 * 1024;
-	  byte[] buffer = new byte[BUFFER_SIZE];
-
-	  using (Stream input = File.OpenRead(inputFile))
-	  {
-		int index = 0;
-		while (input.Position < input.Length)
-		{
-		  using (Stream output = File.Create(path + "\\" + index))
-		  {
-			int remaining = chunkSize, bytesRead;
-			while (remaining > 0 && (bytesRead = input.Read(buffer, 0,
-					Math.Min(remaining, BUFFER_SIZE))) > 0)
-			{
-			  output.Write(buffer, 0, bytesRead);
-			  remaining -= bytesRead;
-			}
-		  }
-		  index++;
-		  Thread.Sleep(50); // experimental; perhaps try it
-		}
-	  }
-	}
-	#endregion
-
+	/// <summary>
+	/// Saves the choosen file to the network.
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
 	private async void SaveFileToNetworkExecuteAsync(object sender, RoutedEventArgs e)
 	{
 	  NetworkInfo networkinfo = this.LoadNetworkState();
@@ -156,17 +148,17 @@ namespace UserClient
 	  TrackerService.TrackerServiceClient trackerserverclient = new TrackerService.TrackerServiceClient(channel);
 
 	  //NetworkInfoResponse networkinforesponse = trackerserverclient.GetNetworkInfo(new NetworkInfoRequest());
-	  Console.WriteLine("\n\n\nNetzwerkinformationen anfragen:");
-	  Console.WriteLine("Fragmentgröße: " + networkinfo.FragmentSize);
-	  Console.WriteLine("Hashalgorithmus: " + networkinfo.HashAlgorithm);
-	  Console.WriteLine("Torrents:");
+	  //Console.WriteLine("\n\n\nNetzwerkinformationen anfragen:");
+	  //Console.WriteLine("Fragmentgröße: " + networkinfo.FragmentSize);
+	  //Console.WriteLine("Hashalgorithmus: " + networkinfo.HashAlgorithm);
+	  //Console.WriteLine("Torrents:");
 	  foreach (string item in networkinfo.TorrentList) { Console.WriteLine(item); }
 
 	  //this.SaveCurrentNetworkState(networkinforesponse);
 
-	  Console.WriteLine("\n\n\nInitialisiere upload:");
+	  //Console.WriteLine("\n\n\nInitialisiere upload:");
 	  HashAlgorithm hashAlgorithm = HashAlgorithm.Create(networkinfo.HashAlgorithm);
-	  string fileHash = "";
+	  string fileHash;
 	  using (FileStream fileStream = new FileStream(this.Source.UriSource.OriginalString, FileMode.Open, FileAccess.Read))
 	  {
 		fileHash = Helper.GetHashString(hashAlgorithm.ComputeHash(fileStream));
@@ -176,9 +168,9 @@ namespace UserClient
 		fileUpInitReq.FileHash = fileHash;
 		fileUpInitReq.FileSize = fileInfo.Length;
 		FileUploadInitiationResponse fuires = trackerserverclient.InitiateUpload(fileUpInitReq);
-		Console.WriteLine("FileHash: " + fileHash);
-		Console.WriteLine("FileSize: " + fileInfo.Length);
-		Console.WriteLine("Response ist void!");
+		//Console.WriteLine("FileHash: " + fileHash);
+		//Console.WriteLine("FileSize: " + fileInfo.Length);
+		//Console.WriteLine("Response ist void!");
 
 		AsyncClientStreamingCall<FileFragment, FileUploadResponse> asyncClientStreamingCall = trackerserverclient.UploadFileFragments();
 		FileFragment fileFragment = new FileFragment();
@@ -212,11 +204,15 @@ namespace UserClient
 	  }
 	}
 
+	/// <summary>
+	/// Loads a picture from the filesystem which is selected to be uploaded to the torrent network
+	/// </summary>
+	/// <param name="obj"></param>
 	private void LoadPicture(object obj)
 	{
 	  OpenFileDialog dialog = new OpenFileDialog()
 	  {
-		DefaultExt = ".png",
+		DefaultExt = ClientResources.ExtensionPNG,
 		Multiselect = false,
 	  };
 
@@ -239,6 +235,10 @@ namespace UserClient
 
 
 	#region Save and Load NetworkInfo
+	/// <summary>
+	/// Loads the last version of the networkinfo from the filesystem.
+	/// </summary>
+	/// <returns>Last saved version of Networkinfo from the filesystem</returns>
 	private NetworkInfo LoadNetworkState()
 	{
 	  NetworkInfo networkInfo;
@@ -256,6 +256,12 @@ namespace UserClient
 	  }
 	  return networkInfo;
 	}
+
+	/// <summary>
+	/// Requests the current state of the networkinfo from the given Trackerserver and saves it to the local filesystem.
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
 	private void UpdateNetworkInfo(object sender, RoutedEventArgs e)
 	{
 	  string dominiksVerbindung = this.IP_TEXT.Text;
@@ -268,45 +274,19 @@ namespace UserClient
 		HashAlgorithm = networkinforesponse.HashAlgorithm,
 		TorrentList = new HashSet<string>(networkinforesponse.TorrentServer)
 	  };
-	  this.SaveCurrentNetworkState(networkInfo);
-	}
-	private void SaveCurrentNetworkState(NetworkInfo networkInfo)
-	{
-	  DirectoryInfo di = new DirectoryInfo(Directory.GetCurrentDirectory());
-	  FileInfo fi = new FileInfo(ClientResources.NetworkInfoFileName);
 	  XmlSerializer serializer = new XmlSerializer(typeof(NetworkInfo));
-	  FileInfo[] d = di.GetFiles();
-	  if (d.Where(x => x.FullName.Equals(fi.FullName, StringComparison.OrdinalIgnoreCase)).Count() == 0)
+	  using (FileStream stream = new FileStream(Directory.GetCurrentDirectory() + ClientResources.Slash + ClientResources.NetworkInfoFileName, FileMode.Create, FileAccess.Write))
 	  {
-		using (FileStream stream = new FileStream(ClientResources.NetworkInfoFileName, FileMode.CreateNew, FileAccess.Write))
-		{
-		  serializer.Serialize(stream, networkInfo);
-		}
-	  }
-	  else
-	  {
-		HashSet<string> dezerialized;
-		using (FileStream stream = File.OpenRead(ClientResources.NetworkInfoFileName))
-		{
-		  dezerialized = ((NetworkInfo)serializer.Deserialize(stream)).TorrentList;
-		}
-		bool changed = false;
-		foreach (string item in dezerialized)
-		{
-		  changed |= networkInfo.TorrentList.Add(item);
-		}
-		if (changed)
-		{
-		  using (FileStream stream = new FileStream(ClientResources.NetworkInfoFileName, FileMode.CreateNew, FileAccess.Write))
-		  {
-			serializer.Serialize(stream, networkInfo);
-		  }
-		}
+		serializer.Serialize(stream, networkInfo);
 	  }
 	}
 	#endregion
 
 	#region Save and Load files that are saved in torrent network
+	/// <summary>
+	/// Loads the list of all files that are stored in the torrent network. This list is localy saved.
+	/// </summary>
+	/// <returns>List of saved files</returns>
 	private List<SavedFileInfo> LoadSavedFileInfoList()
 	{
 	  DirectoryInfo di = new DirectoryInfo(Directory.GetCurrentDirectory());
@@ -324,9 +304,14 @@ namespace UserClient
 		}
 	  }
 	}
-	private void SaveNewFileInfoToList(SavedFileInfo sfi)
+
+	/// <summary>
+	/// Saves a new entry to the list of the files which are already stored in the torrent netnetwork
+	/// </summary>
+	/// <param name="savedFileInfo"></param>
+	private void SaveNewFileInfoToList(SavedFileInfo savedFileInfo)
 	{
-	  if (sfi == null) { throw new ArgumentNullException(); }
+	  if (savedFileInfo == null) { throw new ArgumentNullException(); }
 	  List<SavedFileInfo> list;
 	  try
 	  {
@@ -336,8 +321,8 @@ namespace UserClient
 	  {
 		list = new List<SavedFileInfo>();
 	  }
-	  list.Add(sfi);
-	  FileInfo fi = new FileInfo("savedfiles.xml");
+	  list.Add(savedFileInfo);
+	  FileInfo fi = new FileInfo(ClientResources.File_SavedFilesXML);
 	  if (fi.Exists) { fi.Delete(); }
 	  using (FileStream stream = new FileStream(ClientResources.SavedFilesInfoFileName, FileMode.CreateNew, FileAccess.Write))
 	  {
@@ -346,6 +331,11 @@ namespace UserClient
 	}
 	#endregion
 
+	/// <summary>
+	/// Loads the list of all uploaded files and fills the data grid.
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
 	private void LoadLocalNetworkFileInformation(object sender, RoutedEventArgs e)
 	{
 	  ObservableCollection<FileTableItem> fileTable = new ObservableCollection<FileTableItem>();
@@ -356,7 +346,7 @@ namespace UserClient
 	  }
 	  catch
 	  {
-		MessageBox.Show("Sie haben noch keine Datein im Netzwerkgespeichert.");
+		MessageBox.Show(ClientResources.Output_NoSavedFiles);
 		return;
 	  }
 	  foreach (SavedFileInfo sfi in savedFiles)
@@ -376,99 +366,187 @@ namespace UserClient
 	  this.Source = null;
 	}
 
-
+	/// <summary>
+	/// Downloads the in the data grid selected files and saves the in the local download directory.
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
 	private void DownloadFilesFromTorrentNetwork(object sender, RoutedEventArgs e)
 	{
 	  foreach (FileTableItem filetableitem in this.FileTable)
 	  {
 		if (filetableitem.Download)
 		{
+		  FileInfo fi = new FileInfo(Directory.GetCurrentDirectory() + ClientResources.Directory_Downloads + ClientResources.Slash + filetableitem.FileName);
+		  if (fi.Exists)
+		  {
+			string message = ClientResources.Output_ReplaceFile1 + filetableitem.FileName + ClientResources.Output_ReplaceFile2;
+			string title = ClientResources.Output_ReplaceFileTitle;
+			MessageBoxResult res = MessageBox.Show(message, title, MessageBoxButton.YesNo, MessageBoxImage.Warning);
+			if (res == MessageBoxResult.No || res == MessageBoxResult.Cancel) { continue; }
+		  }
 		  this.DownloadSingleFileFromTorrentNetwork(filetableitem);
 		}
 	  }
 	}
 
-	private async void DownloadSingleFileFromTorrentNetwork(FileTableItem filetableitem)
+	/// <summary>
+	/// Downloads a single file from the torrent network.
+	/// </summary>
+	/// <param name="filetableitem"></param>
+	private void DownloadSingleFileFromTorrentNetwork(FileTableItem filetableitem)
 	{
 	  NetworkInfo networkinfo = this.LoadNetworkState();
-	  string choosenTorrent = Helper.GetRandomElement(networkinfo.TorrentList);
-	  if (!Helper.TryUriParse(choosenTorrent, out (string host, int port) channelHostPort))
-	  {
-		MessageBox.Show("Invalid torrent uri");
-		return;
-	  }
-	  string channelConnection = channelHostPort.host + ":" + channelHostPort.port;
-	  Channel channel = new Channel(channelConnection, ChannelCredentials.Insecure);
-	  TorrentService.TorrentServiceClient torrentServiceClient = new TorrentService.TorrentServiceClient(channel);
 
-	  FileDistributionRequest fileDistReq = new FileDistributionRequest() { FileHash = filetableitem.FileHash };
-	  FileDistributionResponse fileDistRes;
-	  try
+	  for (int i = random.Next(0, networkinfo.TorrentList.Count), j = 0; j < networkinfo.TorrentList.Count; j++, i++)
 	  {
-		fileDistRes = torrentServiceClient.GetFileDistribution(fileDistReq);
+		//Get connection
+		string choosenTorrent = networkinfo.TorrentList.ElementAt(i % networkinfo.TorrentList.Count);
+		if (!Helper.TryUriParse(choosenTorrent, out (string host, int port) channelHostPort)) { continue; }
+		//Create connection
+		string channelConnection = channelHostPort.host + ClientResources.Colon + channelHostPort.port;
+		Channel channel = new Channel(channelConnection, ChannelCredentials.Insecure);
+		TorrentService.TorrentServiceClient torrentServiceClient = new TorrentService.TorrentServiceClient(channel);
+		//get fragment distribution
+		FileDistributionRequest fileDistReq = new FileDistributionRequest() { FileHash = filetableitem.FileHash };
+		FileDistributionResponse fileDistRes;
+		try
+		{
+		  fileDistRes = torrentServiceClient.GetFileDistribution(fileDistReq);
+		}
+		catch (RpcException rpcexception)
+		{
+		  //server was not able to send me the distribution
+		  switch (rpcexception.StatusCode)
+		  {
+			case StatusCode.NotFound:
+			  {
+				MessageBox.Show(ClientResources.ReqFileNotFound);
+				break;
+			  }
+			case StatusCode.OutOfRange:
+			  {
+				MessageBox.Show(ClientResources.ReqFragOneNotFound);
+				break;
+			  }
+			default:
+			  {
+				MessageBox.Show(ClientResources.OtherError + rpcexception.StatusCode + ClientResources.SemiColon + rpcexception.Message);
+				break;
+			  }
+		  }
+		  continue;
+		}
+		this.DownloadFragments(filetableitem, fileDistRes, networkinfo);
 	  }
-	  catch (Exception e)
-	  {
-		MessageBox.Show(e.Message);
-		return;
-	  }
-	  AsyncDuplexStreamingCall<FragmentDownloadRequest, FragmentDownloadResponse> downStream = torrentServiceClient.DownloadFileFragment();
-
-	  DirectoryInfo di = new DirectoryInfo(Directory.GetCurrentDirectory() + "/Downloads");
+	}
+	/// <summary>
+	/// Downloads the file fragments and puts them together
+	/// </summary>
+	/// <param name="filetableitem">File that gets downloaded.</param>
+	/// <param name="fileDistRes">List of Fragments and their holders.</param>
+	/// <param name="networkinfo">NetworkInfo of the network.</param>
+	private void DownloadFragments(FileTableItem filetableitem, FileDistributionResponse fileDistRes, NetworkInfo networkinfo)
+	{
+	  DirectoryInfo di = new DirectoryInfo(Directory.GetCurrentDirectory() + ClientResources.Directory_Downloads);
 	  if (!di.Exists) { di.Create(); }
-	  using (FileStream fileStream = new FileStream(di.FullName + "/" + filetableitem.FileName, FileMode.CreateNew, FileAccess.Write))
+	  //now i have a valid file distribution
+	  using (FileStream fileStream = new FileStream(Directory.GetCurrentDirectory() + ClientResources.Directory_Downloads + ClientResources.Slash + filetableitem.FileName, FileMode.Create, FileAccess.Write))
 	  {
 		long packetnumber = (filetableitem.FileSize + networkinfo.FragmentSize - 1) / networkinfo.FragmentSize;
-		//int counter = 0;
-		fileStream.Seek(0, SeekOrigin.Begin);
-
 		//für jedes Fragment in meiner Verteilung
 		foreach (string fragmenthash in fileDistRes.FragmentOrder)
 		{
+		  //Liste der Torrentserver, die dieses Fragment besitzen
+		  FragmentHolderList verteilung = fileDistRes.FragmentDistribution[fragmenthash];
+		  RepeatedField<string> torrents = verteilung.EndPoints;
+		  FragmentDownloadResponse fragDownRes = null;
 
-		  string choosenEndpoint = Helper.GetRandomElement(fileDistRes.FragmentDistribution[fragmenthash].EndPoints);
-		  if (!Helper.TryUriParse(choosenTorrent, out (string host, int port) endpointHostPort))
+		  for (int torrentCounter = 0; torrentCounter < torrents.Count; torrentCounter++)
 		  {
-			MessageBox.Show("Invalid torrent uri");
-			return;
-		  }
-		  await downStream.RequestStream.WriteAsync(new FragmentDownloadRequest() { FragmentHash = fragmenthash });
-		  if (await downStream.ResponseStream.MoveNext())
-		  {
-			byte[] data = downStream.ResponseStream.Current.Data.ToArray();
-			if (data.Length != networkinfo.FragmentSize) { /*Fehler*/}
-			else
+			if (!Helper.TryUriParse(torrents[torrentCounter], out (string host, int port) endpointHostPort)) { continue; }
+			string channelConnection = endpointHostPort.host + ClientResources.Colon + endpointHostPort.port;
+			Channel channel = new Channel(channelConnection, ChannelCredentials.Insecure);
+			TorrentService.TorrentServiceClient endpoint = new TorrentService.TorrentServiceClient(channel);
+			try
 			{
-			  fileStream.Write(data, 0, data.Length);
+			  fragDownRes = endpoint.DownloadFileFragment(new FragmentDownloadRequest() { FragmentHash = fragmenthash });
+			}
+			catch (RpcException rpcexception)
+			{
+			  switch (rpcexception.StatusCode)
+			  {
+				case StatusCode.NotFound:
+				  {
+					MessageBox.Show(ClientResources.ReqFragNotFound);
+					break;
+				  }
+				case StatusCode.InvalidArgument:
+				  {
+					MessageBox.Show(ClientResources.ReqFragInvalidHash);
+					break;
+				  }
+				case StatusCode.Internal:
+				  {
+					MessageBox.Show(ClientResources.ReqInternalError);
+					break;
+				  }
+				default:
+				  {
+					MessageBox.Show(ClientResources.OtherError + rpcexception.StatusCode + ClientResources.SemiColon + rpcexception.Message);
+					break;
+				  }
+			  }
+			  continue;
+			}
+			if(fragDownRes != null)
+			{
+			  break;
 			}
 		  }
-		  else {/*Fehler*/}
 
-		  //bool x = await downStream.ResponseStream.MoveNext();
-
+		  if (fragDownRes == null)
+		  {
+			//keiner der Torrents konnte mir dieses Fragment richtig überreichen. Ich mus den Download abbrechen
+			MessageBox.Show(ClientResources.ErrorWhileDownload);
+			return;
+		  }
+		  fragDownRes.Data.WriteTo(fileStream);
 
 		}
-
-
-		//FileFragment fileFragment = new FileFragment();
-
-		// }
-
-		//{
-		//  FileFragment fileFragment = new FileFragment();
-		//  for (int i = 0; i < packetnumber; i++)
-		//  {
-		//	downStream.RequestStream.WriteAsync(new FragmentDownloadRequest() { FragmentHash = fragmenthash })
-		//	fileStream.Read(buffer, 0, buffer.Length);
-
-		//	fileFragment.FileHash = fileHash;
-		//	fileFragment.Data = ByteString.CopyFrom(buffer);
-		//	fileFragment.FragmentHash = Helper.GetHashString(hashAlgorithm.ComputeHash(buffer));
-		//	await asyncClientStreamingCall.RequestStream.WriteAsync(fileFragment);
-		//	Console.WriteLine(counter++);
-
-		//}
 	  }
+	}
+
+	/// <summary>
+	/// Close
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	private void Close(object sender, RoutedEventArgs e)
+	{
+	  this.Close();
 	}
   }
 }
+
+
+
+
+//FileFragment fileFragment = new FileFragment();
+
+// }
+
+//{
+//  FileFragment fileFragment = new FileFragment();
+//  for (int i = 0; i < packetnumber; i++)
+//  {
+//	downStream.RequestStream.WriteAsync(new FragmentDownloadRequest() { FragmentHash = fragmenthash })
+//	fileStream.Read(buffer, 0, buffer.Length);
+
+//	fileFragment.FileHash = fileHash;
+//	fileFragment.Data = ByteString.CopyFrom(buffer);
+//	fileFragment.FragmentHash = Helper.GetHashString(hashAlgorithm.ComputeHash(buffer));
+//	await asyncClientStreamingCall.RequestStream.WriteAsync(fileFragment);
+//	Console.WriteLine(counter++);
+
+//}
