@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:UserClient"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="PseudoTorrentNetzwerk-Client" Height="450" Width="800">
 	<Grid Margin="2">
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="*"/>
@@ -41,7 +41,7 @@
 			<Button Content="TorrentInfos aktualisieren" Click="UpdateNetworkInfo"/>
 			<Button Content="Bild im Torrentnetz speichern" Click="SaveFileToNetworkExecuteAsync"/>
 			<Button Content="Meine Bilder im Torrentnetz anzeigen" Click="LoadLocalNetworkFileInformation"/>
-			<Button Content="Gewählte Actionen durchführen" Click="DownloadFilesFromTorrentNetwork"/>
+			<Button Content="Gewählte Aktionen durchführen" Click="DownloadFilesFromTorrentNetwork"/>
 			<Button Content="Schließen" Click="Close"/>
 			<!--<Button Content="Splittest" Command="{Binding SplitTest}"/>-->
 			<!--<ItemsControl ItemsSource="{Binding FileList}">
