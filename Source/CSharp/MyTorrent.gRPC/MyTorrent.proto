@@ -147,5 +147,5 @@ service TorrentService
     rpc GetFileDistribution(FileDistributionRequest) returns (FileDistributionResponse);
     
     // Services that provides the byte data of the fragment, you requested by the hash string     
-    rpc DownloadFileFragment(stream FragmentDownloadRequest) returns (stream FragmentDownloadResponse);
+    rpc DownloadFileFragment(FragmentDownloadRequest) returns (FragmentDownloadResponse);
 }

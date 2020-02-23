@@ -183,7 +183,7 @@ namespace MyTorrent.TorrentServer.Services
             return Task.Run(Operation);
         }
 
-        public override async Task DownloadFileFragment(IAsyncStreamReader<FragmentDownloadRequest> requestStream, IServerStreamWriter<FragmentDownloadResponse> responseStream, ServerCallContext context)
+        public override async Task<FragmentDownloadResponse> DownloadFileFragment(FragmentDownloadRequest request, ServerCallContext context)
         {
             EventId eventId = GetNextEventId();
             IFragmentStorageProvider storageProvider = _distributionService.FragmentStorage;
@@ -191,40 +191,35 @@ namespace MyTorrent.TorrentServer.Services
             _logger.LogDebug(eventId, $"'{context.Peer}' is downloading files.");
 #endif
 
-            while (await requestStream.MoveNext())
+            try
             {
-                string fragmentHash = requestStream.Current.FragmentHash;
-
-                try
-                {
 #if TRACE
-                    _logger.LogTrace(eventId, $"'{context.Peer}' is requested fragment with hash: '{fragmentHash}'.");
+                _logger.LogTrace(eventId, $"'{context.Peer}' is requested fragment with hash: '{request.FragmentHash}'.");
 #endif
-                    byte[] data = await storageProvider.GetFragmentAsync(fragmentHash);
+                byte[] data = await storageProvider.GetFragmentAsync(request.FragmentHash);
 
-                    FragmentDownloadResponse response = new FragmentDownloadResponse();
-                    response.Data.CopyTo(data, 0);
+                FragmentDownloadResponse response = new FragmentDownloadResponse();
+                response.Data.CopyTo(data, 0);
 
-                    await responseStream.WriteAsync(response);
-                }
-                catch (FormatException exception)
-                {
-                    string errorMessage = $"Invalid Fragment Hash ('{fragmentHash}') received.";
-                    _logger.LogError(eventId, exception, errorMessage);
-                    throw new RpcException(new Status(StatusCode.InvalidArgument, errorMessage));
-                }
-                catch (KeyNotFoundException exception)
-                {
-                    string errorMessage = $"Fragment (Hash: '{fragmentHash}') not found.";
-                    _logger.LogError(eventId, exception, errorMessage);
-                    throw new RpcException(new Status(StatusCode.NotFound, errorMessage));
-                }
-                catch (Exception exception)
-                {
-                    string errorMessage = $"Failed to retrive fragment (Hash: '{fragmentHash}').";
-                    _logger.LogError(eventId, exception, errorMessage);
-                    throw new RpcException(new Status(StatusCode.Internal, errorMessage));
-                }
+                return response;
+            }
+            catch (FormatException exception)
+            {
+                string errorMessage = $"Invalid Fragment Hash ('{request.FragmentHash}') received.";
+                _logger.LogError(eventId, exception, errorMessage);
+                throw new RpcException(new Status(StatusCode.InvalidArgument, errorMessage));
+            }
+            catch (KeyNotFoundException exception)
+            {
+                string errorMessage = $"Fragment (Hash: '{request.FragmentHash}') not found.";
+                _logger.LogError(eventId, exception, errorMessage);
+                throw new RpcException(new Status(StatusCode.NotFound, errorMessage));
+            }
+            catch (Exception exception)
+            {
+                string errorMessage = $"Failed to retrive fragment (Hash: '{request.FragmentHash}').";
+                _logger.LogError(eventId, exception, errorMessage);
+                throw new RpcException(new Status(StatusCode.Internal, errorMessage));
             }
         }
 
