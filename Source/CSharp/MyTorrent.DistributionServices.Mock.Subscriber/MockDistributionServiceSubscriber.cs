@@ -4,7 +4,9 @@ using MyTorrent.FragmentStorageProviders;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace MyTorrent.DistributionServices
@@ -21,6 +23,10 @@ namespace MyTorrent.DistributionServices
         private long? _fragmentSize;
 
         private volatile bool _disposed = false;
+
+        private readonly string fileHash;
+        private readonly long fileSize;
+        private List<string> _fragmentSequence = new List<string>();
 
         /// <summary>
         /// Initializes a new <see cref="MockDistributionServiceSubscriber"/> instance.
@@ -42,7 +48,55 @@ namespace MyTorrent.DistributionServices
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _fragmentStorageProvider = fragmentStorageProvider ?? throw new ArgumentNullException(nameof(fragmentStorageProvider));
 
-            _fragmentSize = 80_000;
+            _fragmentSize = 1024;
+
+            var sha256 = HashAlgorithm.Create("SHA256");
+            var inc = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+
+            using (FileStream fs = new FileStream("<Path>", FileMode.Open, FileAccess.Read))
+            {
+                fileSize = fs.Length;
+
+                byte[] buffer = new byte[_fragmentSize.Value];
+                byte[] hash = sha256.ComputeHash(buffer);
+                string hashString = "";
+
+                while (true)
+                {
+                    int read = fs.Read(buffer);
+
+                    if (read == 0)
+                        break;
+                    
+                    if (read < buffer.Length)
+                    {
+                        Array.Resize(ref buffer, read);
+                    }
+
+                    inc.AppendData(buffer);
+
+                    hash = sha256.ComputeHash(buffer);
+                    hashString = "";
+
+                    foreach (byte b in hash)
+                    {
+                        hashString += b.ToString("X2");
+                    }
+
+                    _fragmentSequence.Add(hashString);
+                    fragmentStorageProvider.StoreFragmentAsync(hashString, buffer).Wait();
+                }
+
+                hash = inc.GetHashAndReset();
+                hashString = "";
+
+                foreach (byte b in hash)
+                {
+                    hashString += b.ToString("X2");
+                }
+
+                fileHash = hashString;
+            }
         }
 
         /// <summary>
@@ -92,7 +146,7 @@ namespace MyTorrent.DistributionServices
             get
             {
                 EnsureStorageProviderWasNotDisposed();
-                return Array.Empty<Uri>();
+                return new Uri[] { new Uri("grpc://127.0.0.1:50051") };
             }
         }
 
@@ -150,7 +204,7 @@ namespace MyTorrent.DistributionServices
         {
             EnsureStorageProviderWasNotDisposed();
 
-            return false;
+            return fileHash.ToUpper().Equals(this.fileHash);
         }
 
         /// <summary>
@@ -170,7 +224,7 @@ namespace MyTorrent.DistributionServices
         {
             EnsureStorageProviderWasNotDisposed();
 
-            return false;
+            return _fragmentSequence.Contains(fragmentHash);
         }
 
         /// <summary>
@@ -197,8 +251,29 @@ namespace MyTorrent.DistributionServices
         {
             EnsureStorageProviderWasNotDisposed();
 
+            if (ExistsFile(fileHash))
+            {
+                fileInfo = new FFI()
+                {
+                    Hash = this.fileHash,
+                    Size = this.fileSize,
+                    FragmentSequence = _fragmentSequence
+                };
+
+                return true;
+            }
+
             fileInfo = null;
             return false;
+        }
+
+        class FFI : IFragmentedFileInfo
+        {
+            public string Hash { get; set; } = "";
+
+            public long Size { get; set; } = 0;
+
+            public IEnumerable<string> FragmentSequence { get; set; } = Array.Empty<string>();
         }
 
         /// <summary>
@@ -224,6 +299,12 @@ namespace MyTorrent.DistributionServices
         public bool TryGetFragmentDistribution(string fragmentHash, out IEnumerable<Uri> fragmentUris)
         {
             EnsureStorageProviderWasNotDisposed();
+
+            if (ExistsFragment(fragmentHash))
+            {
+                fragmentUris = new Uri[] { new Uri("grpc://127.0.0.1:50051/" + fragmentHash) };
+                return true;
+            }
 
             fragmentUris = Array.Empty<Uri>();
             return false;
@@ -255,10 +336,8 @@ namespace MyTorrent.DistributionServices
 
             if (disposing)
             {
-                //TODO: release managed resources;
+                //release managed resources here
             }
-
-            //throw new NotImplementedException();
         }
     }
 }

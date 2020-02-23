@@ -70,13 +70,13 @@ namespace MyTorrent.DistributionServices
             }
         }
 
-    /// <summary>
-    /// Gets the uris of the endpoints where the fragments are distributed to and can be retrived from.
-    /// </summary>
-    /// <exception cref="ObjectDisposedException">
-    /// This method was called after the <see cref="MockDistributionServicePublisher"/> was disposed.
-    /// </exception>
-    public IReadOnlyCollection<Uri> DistributionEndPoints => new Uri[1] { new Uri("gRPC://127.0.0.1:50051") };
+        /// <summary>
+        /// Gets the uris of the endpoints where the fragments are distributed to and can be retrived from.
+        /// </summary>
+        /// <exception cref="ObjectDisposedException">
+        /// This method was called after the <see cref="MockDistributionServicePublisher"/> was disposed.
+        /// </exception>
+        public IReadOnlyCollection<Uri> DistributionEndPoints => new Uri [] { new Uri("gRPC://127.0.0.1:50051") };
 
 
         /// <summary>
@@ -364,7 +364,7 @@ namespace MyTorrent.DistributionServices
 
             if (disposing)
             {
-
+                //release managed resources here
             }
         }
     }
