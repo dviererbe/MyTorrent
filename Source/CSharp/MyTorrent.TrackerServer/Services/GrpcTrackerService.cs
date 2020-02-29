@@ -303,13 +303,22 @@ namespace MyTorrent.TrackerServer.Services
                 if (add)
                     _pendingFiles.Add(normalizedFileHash, fileState);                
             }
-            catch (IOException)
+            catch (Exception exp)
             {
                 throw new RpcException(new Status(StatusCode.ResourceExhausted, "Failed to allocate enough space for the specified file."));
             }
             finally
             {
-                _lock.Release();
+        try
+        {
+          _lock.Release();
+        }
+        catch (Exception e)
+        {
+          _logger.LogError(e, "");
+          //Console.Write()
+          throw;
+        }
             }
 
             return new FileUploadInitiationResponse();
