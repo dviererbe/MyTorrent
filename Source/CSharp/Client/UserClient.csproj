@@ -99,7 +99,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MyTorrent.gRPC\MyTorrent.gRPC.csproj">
-      <Project>{8fd3e19d-3b70-47de-8139-a60980222561}</Project>
+      <Project>{5733c763-30ac-46ca-b4be-b29aafda959e}</Project>
       <Name>MyTorrent.gRPC</Name>
     </ProjectReference>
   </ItemGroup>

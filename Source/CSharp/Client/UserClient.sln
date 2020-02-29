@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29418.71
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserClient", "UserClient.csproj", "{B6BC8FA9-9292-4288-B564-2E564517FAF0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyTorrent.gRPC", "..\MyTorrent.gRPC\MyTorrent.gRPC.csproj", "{8FD3E19D-3B70-47DE-8139-A60980222561}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyTorrent.gRPC", "..\MyTorrent.gRPC\MyTorrent.gRPC.csproj", "{5733C763-30AC-46CA-B4BE-B29AAFDA959E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{B6BC8FA9-9292-4288-B564-2E564517FAF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B6BC8FA9-9292-4288-B564-2E564517FAF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B6BC8FA9-9292-4288-B564-2E564517FAF0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8FD3E19D-3B70-47DE-8139-A60980222561}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8FD3E19D-3B70-47DE-8139-A60980222561}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8FD3E19D-3B70-47DE-8139-A60980222561}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8FD3E19D-3B70-47DE-8139-A60980222561}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5733C763-30AC-46CA-B4BE-B29AAFDA959E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5733C763-30AC-46CA-B4BE-B29AAFDA959E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5733C763-30AC-46CA-B4BE-B29AAFDA959E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5733C763-30AC-46CA-B4BE-B29AAFDA959E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
