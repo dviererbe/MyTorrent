@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MyTorrent.DistributionServices.Events;
@@ -12,12 +13,12 @@ namespace MyTorrent.DistributionServices
         /// </summary>
         private class WaitForFragmentDeliveryState : IMqttDistributionServiceSubscriberState
         {
-            public WaitForFragmentDeliveryState(EventId eventId, string fragmentHash, long fragmentSize)
+            public WaitForFragmentDeliveryState(EventId eventId, string fragmentHash, long fragmentSize, TimeSpan timeoutTimeSpan)
             {
                 EventId = eventId;
 
                 TimeoutCancellationTokenSource = new CancellationTokenSource();
-                TimeoutTask = Task.Delay(TimeoutTimeSpan, TimeoutCancellationTokenSource.Token);
+                TimeoutTask = Task.Delay(timeoutTimeSpan, TimeoutCancellationTokenSource.Token);
 
                 FragmentHash = fragmentHash;
                 FragmentSize = fragmentSize;

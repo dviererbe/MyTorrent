@@ -75,17 +75,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mock", "Mock", "{FAEABC26-C
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mqtt", "Mqtt", "{13CCFA43-EED9-4AA6-B7E1-DF393C4D3683}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyTorrent.DistributionServices.PersistentDistributionState.File.Json", "MyTorrent.DistributionServices.PersistentDistributionState.File.Json\MyTorrent.DistributionServices.PersistentDistributionState.File.Json.csproj", "{E0EC65EC-8A29-493C-B5B7-E75B0FBB2699}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyTorrent.DistributionServices.PersistentDistributionState.File.Json", "MyTorrent.DistributionServices.PersistentDistributionState.File.Json\MyTorrent.DistributionServices.PersistentDistributionState.File.Json.csproj", "{E0EC65EC-8A29-493C-B5B7-E75B0FBB2699}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyTorrent.DistributionServices.PersistentDistributionState.Abstractions", "MyTorrent.DistributionServices.PersistentDistributionState.Abstractions\MyTorrent.DistributionServices.PersistentDistributionState.Abstractions.csproj", "{741E26EE-A228-41F5-97A3-94502032238D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyTorrent.DistributionServices.PersistentDistributionState.Abstractions", "MyTorrent.DistributionServices.PersistentDistributionState.Abstractions\MyTorrent.DistributionServices.PersistentDistributionState.Abstractions.csproj", "{741E26EE-A228-41F5-97A3-94502032238D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyTorrent.DistributionServices.PersistentDistributionState.Tests", "MyTorrent.DistributionServices.PersistentDistributionState.Tests\MyTorrent.DistributionServices.PersistentDistributionState.Tests.csproj", "{3D8F689B-E7B7-4BEA-ACBA-86E489E6C5DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyTorrent.DistributionServices.PersistentDistributionState.Tests", "MyTorrent.DistributionServices.PersistentDistributionState.Tests\MyTorrent.DistributionServices.PersistentDistributionState.Tests.csproj", "{3D8F689B-E7B7-4BEA-ACBA-86E489E6C5DD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PersistentDistributionState", "PersistentDistributionState", "{86E81530-F66D-4B84-A686-0A8830D53EBA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyTorrent.DistributionServices.StandardDataTypes", "MyTorrent.DistributionServices.StandardDataTypes\MyTorrent.DistributionServices.StandardDataTypes.csproj", "{11983A92-94BD-481A-8BD7-8E55FA0A4A5C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyTorrent.DistributionServices.StandardDataTypes", "MyTorrent.DistributionServices.StandardDataTypes\MyTorrent.DistributionServices.StandardDataTypes.csproj", "{11983A92-94BD-481A-8BD7-8E55FA0A4A5C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyTorrent.DistributionServices.StandardDataTypes.JsonConverters", "MyTorrent.DistributionServices.StandardDataTypes.JsonConverters\MyTorrent.DistributionServices.StandardDataTypes.JsonConverters.csproj", "{F4073394-0966-4726-B7E2-8C9A5966B368}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyTorrent.DistributionServices.StandardDataTypes.JsonConverters", "MyTorrent.DistributionServices.StandardDataTypes.JsonConverters\MyTorrent.DistributionServices.StandardDataTypes.JsonConverters.csproj", "{F4073394-0966-4726-B7E2-8C9A5966B368}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserClient", "Client\UserClient.csproj", "{B6BC8FA9-9292-4288-B564-2E564517FAF0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestClient", "TestClient\TestClient.csproj", "{A784DF20-69A9-4A24-85C7-4A5E759B1166}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -469,6 +473,30 @@ Global
 		{F4073394-0966-4726-B7E2-8C9A5966B368}.Release|x64.Build.0 = Release|Any CPU
 		{F4073394-0966-4726-B7E2-8C9A5966B368}.Release|x86.ActiveCfg = Release|Any CPU
 		{F4073394-0966-4726-B7E2-8C9A5966B368}.Release|x86.Build.0 = Release|Any CPU
+		{B6BC8FA9-9292-4288-B564-2E564517FAF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6BC8FA9-9292-4288-B564-2E564517FAF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6BC8FA9-9292-4288-B564-2E564517FAF0}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B6BC8FA9-9292-4288-B564-2E564517FAF0}.Debug|x64.Build.0 = Debug|Any CPU
+		{B6BC8FA9-9292-4288-B564-2E564517FAF0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B6BC8FA9-9292-4288-B564-2E564517FAF0}.Debug|x86.Build.0 = Debug|Any CPU
+		{B6BC8FA9-9292-4288-B564-2E564517FAF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6BC8FA9-9292-4288-B564-2E564517FAF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B6BC8FA9-9292-4288-B564-2E564517FAF0}.Release|x64.ActiveCfg = Release|Any CPU
+		{B6BC8FA9-9292-4288-B564-2E564517FAF0}.Release|x64.Build.0 = Release|Any CPU
+		{B6BC8FA9-9292-4288-B564-2E564517FAF0}.Release|x86.ActiveCfg = Release|Any CPU
+		{B6BC8FA9-9292-4288-B564-2E564517FAF0}.Release|x86.Build.0 = Release|Any CPU
+		{A784DF20-69A9-4A24-85C7-4A5E759B1166}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A784DF20-69A9-4A24-85C7-4A5E759B1166}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A784DF20-69A9-4A24-85C7-4A5E759B1166}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A784DF20-69A9-4A24-85C7-4A5E759B1166}.Debug|x64.Build.0 = Debug|Any CPU
+		{A784DF20-69A9-4A24-85C7-4A5E759B1166}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A784DF20-69A9-4A24-85C7-4A5E759B1166}.Debug|x86.Build.0 = Debug|Any CPU
+		{A784DF20-69A9-4A24-85C7-4A5E759B1166}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A784DF20-69A9-4A24-85C7-4A5E759B1166}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A784DF20-69A9-4A24-85C7-4A5E759B1166}.Release|x64.ActiveCfg = Release|Any CPU
+		{A784DF20-69A9-4A24-85C7-4A5E759B1166}.Release|x64.Build.0 = Release|Any CPU
+		{A784DF20-69A9-4A24-85C7-4A5E759B1166}.Release|x86.ActiveCfg = Release|Any CPU
+		{A784DF20-69A9-4A24-85C7-4A5E759B1166}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -512,6 +540,8 @@ Global
 		{86E81530-F66D-4B84-A686-0A8830D53EBA} = {2B266250-E05A-4B9D-AAEF-833F0AD97D35}
 		{11983A92-94BD-481A-8BD7-8E55FA0A4A5C} = {2B266250-E05A-4B9D-AAEF-833F0AD97D35}
 		{F4073394-0966-4726-B7E2-8C9A5966B368} = {2B266250-E05A-4B9D-AAEF-833F0AD97D35}
+		{B6BC8FA9-9292-4288-B564-2E564517FAF0} = {2EEE0898-9678-4693-B146-9F56D601AB4D}
+		{A784DF20-69A9-4A24-85C7-4A5E759B1166} = {2EEE0898-9678-4693-B146-9F56D601AB4D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1087AB4B-9E8C-4C80-BB6C-0DCF25C4BD38}

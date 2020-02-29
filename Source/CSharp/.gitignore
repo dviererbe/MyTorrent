@@ -5,6 +5,7 @@
 **/obj
 
 docs
+packages
 
 .clocignore
 count-lines_of_code.sh

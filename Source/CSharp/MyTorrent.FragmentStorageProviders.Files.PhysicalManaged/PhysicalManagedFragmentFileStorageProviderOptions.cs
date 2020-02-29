@@ -23,12 +23,7 @@ namespace MyTorrent.FragmentStorageProviders
         {
             string storageFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "fragments");
 
-            long storageSpaceUsageLimit = Environment.WorkingSet;
-
-            if (storageSpaceUsageLimit < 1_000_000L)
-                storageSpaceUsageLimit /= 10L;
-            else
-                storageSpaceUsageLimit = 1_000_000L;
+            long storageSpaceUsageLimit = 1_000_000_000;
 
             return new PhysicalManagedFragmentFileStorageProviderOptions(storageFolderPath, storageSpaceUsageLimit, false);
         }

@@ -53,19 +53,56 @@ namespace MyTorrent.TrackerServer
             {
                 IConfiguration configuration = hostContext.Configuration;
 
-                services.Configure<HostOptions>(option => option.ShutdownTimeout = TimeSpan.FromSeconds(20))
-                        .Configure<GrpcTrackerServiceOptions>(configuration.GetSection("gRPC"))
-                        .ConfigureStandardHashingServiceProvider(configuration.GetSection("HashServiceProvider"))
-                        .ConfigureFragmentInMemoryStorageProvider(configuration.GetSection("Storage:InMemory"))
-                        .ConfigureMqttNetwork(configuration.GetSection("Distribution:Mqtt:Network"))
-                        .ConfigureMqttNetwork(configuration.GetSection("Distribution"))
+                bool useInMemory = true;
+                IConfigurationSection section = configuration.GetSection("Storage:Type");
 
-                        .AddOptions()
-                        .AddEventIdCreationSourceCore()
-                        .AddStandardHashingServiceProvider()
-                        .AddFragmentInMemoryStorageProvider()
-                        .AddMqttDistributionServicePublisher()
-                        .AddHostedService<GrpcTrackerService>();
+                if (section.Exists())
+                {
+                    string value = section.Value.Trim().ToLower();
+
+                    if (value.Equals("inmemory"))
+                    {
+                        useInMemory = true;
+                    }
+                    else if (value.Equals("file"))
+                    {
+                        useInMemory = false;
+                    }
+                    else
+                    {
+                        throw new ArgumentOutOfRangeException("Storage Provider Type", value, "Unknown Storage Provider Type");
+                    }
+                }
+
+                //Adding Configuration
+                /////////////////////////////////////////////
+
+                services.Configure<HostOptions>(option => option.ShutdownTimeout = TimeSpan.FromSeconds(20));
+                services.Configure<GrpcTrackerServiceOptions>(configuration.GetSection("gRPC"));
+                services.ConfigureStandardHashingServiceProvider(configuration.GetSection("HashServiceProvider"));
+                services.ConfigureFragmentInMemoryStorageProvider(configuration.GetSection("Storage:InMemory"));
+                services.ConfigureVirtualManagedFragmentFileStorageProvider(configuration.GetSection("Storage:File"));
+                services.ConfigureMqttNetwork(configuration.GetSection("Distribution:Mqtt:Network"));
+                services.ConfigureMqttDistributionServicePublisher(configuration.GetSection("Distribution"));
+
+                //Adding Services
+                /////////////////////////////////////////////
+
+                services.AddOptions();
+                services.AddEventIdCreationSourceCore();
+                services.AddStandardHashingServiceProvider();
+
+                if (useInMemory)
+                {
+                    services.AddFragmentInMemoryStorageProvider();
+                }
+                else
+                {
+                    services.AddVirtualManagedFragmentFileStorageProvider();
+                }
+
+                services.AddMqttDistributionServicePublisher();
+                services.AddHostedService<GrpcTrackerService>();
             }
 
             return new HostBuilder()

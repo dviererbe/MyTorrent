@@ -18,12 +18,13 @@ namespace MyTorrent.DistributionServices
                 EventId eventId,
                 string fragmentHash, 
                 byte[] fragmentData,
-                TaskCompletionSource<IEnumerable<Uri>> taskCompletionSource)
+                TaskCompletionSource<IEnumerable<Uri>> taskCompletionSource,
+                TimeSpan timeoutTimeSpan)
             {
                 EventId = eventId;
 
                 TimeoutCancellationTokenSource = new CancellationTokenSource();
-                TimeoutTask = Task.Delay(TimeoutTimeSpan, TimeoutCancellationTokenSource.Token);
+                TimeoutTask = Task.Delay(timeoutTimeSpan, TimeoutCancellationTokenSource.Token);
 
                 FragmentHash = fragmentHash;
                 FragmentData = fragmentData;

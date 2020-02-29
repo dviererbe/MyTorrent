@@ -31,7 +31,8 @@ namespace MyTorrent.DistributionServices
             ILogger<RemoteMqttBroker> logger, 
             IEventIdCreationSource eventIdCreationSource,
             string host,
-            int port)
+            int port,
+            int timeout)
         {
             _logger = logger;
             _eventIdCreationSource = eventIdCreationSource;
@@ -40,9 +41,21 @@ namespace MyTorrent.DistributionServices
 #if DEBUG
             _logger.LogDebug(eventId, "Creating Mqtt Client.");
 #endif
+            if (port < 0x0000)
+                throw new ArgumentOutOfRangeException(nameof(port), port, "Port number too small.");
+            else if (timeout > 0xffff)
+                throw new ArgumentOutOfRangeException(nameof(port), port, "Port number too large.");
+
+            if (timeout < 1)
+                throw new ArgumentOutOfRangeException(nameof(timeout), timeout, "Timeout timespan too small.");
+            else if (timeout > 99999)
+                throw new ArgumentOutOfRangeException(nameof(timeout), timeout, "Timeout timespan too large.");
+
+            _logger.LogInformation(eventId, $"MQTT Client Communication Timeout: {timeout} ms.");
 
             var clientOptionsBuilder = new MqttClientOptionsBuilder()
                 .WithClientId(ClientId)
+                .WithCommunicationTimeout(TimeSpan.FromMilliseconds(timeout))
                 .WithTcpServer(host, port);
 
             _mqttClient = new MqttFactory().CreateMqttClient();

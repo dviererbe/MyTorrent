@@ -23,20 +23,10 @@ namespace MyTorrent.DistributionServices
     /// </summary>
     public partial class MqttDistributionServicePublisher : IDistributionServicePublisher
     {
-        #region Constants
-
-#if DEBUG
-        private static readonly TimeSpan TimeoutTimeSpan = TimeSpan.FromSeconds(999999);
-#else
-        private static readonly TimeSpan timeoutTimeSpan = TimeSpan.FromSeconds(10);
-#endif
-        private const int MinNeededRequestors = 5;
-
-        #endregion
-
         #region Private Variables
 
-
+        private readonly int _desiredReplicas;
+        private readonly TimeSpan _timeoutTimeSpan;
 
         private readonly IEventIdCreationSource _eventIdCreationSource;
         private readonly ILogger<MqttDistributionServicePublisher> _logger;
@@ -81,7 +71,7 @@ namespace MyTorrent.DistributionServices
             IEventIdCreationSource eventIdCreationSource,
             IHashingServiceProvider hashingServiceProvider,
             IMqttEndpoint mqttEndpoint,
-            IOptions<DistributionServicePublisherOptions>? options = null)
+            IOptions<DistributionServicePublisherOptions> options)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _eventIdCreationSource = eventIdCreationSource ?? throw new ArgumentNullException(nameof(eventIdCreationSource));
@@ -91,7 +81,27 @@ namespace MyTorrent.DistributionServices
             EventId eventId = GetNextEventId();
             _logger.LogInformation(eventId, "Initializing Mqtt Distribution-Service-Publisher.");
 
-            _fragmentSize = options?.Value?.FragmentSize ?? DistributionServicePublisherOptions.Default.FragmentSize;
+            DistributionServicePublisherOptions distributionOptions = options?.Value 
+                                                                      ?? DistributionServicePublisherOptions.Default;
+            if (distributionOptions.Timeout < 1)
+                throw new ArgumentOutOfRangeException(nameof(distributionOptions.Timeout), distributionOptions.Timeout, "Timeout timespan too small.");
+            else if (distributionOptions.Timeout > 99999)
+                throw new ArgumentOutOfRangeException(nameof(distributionOptions.Timeout), distributionOptions.Timeout, "Timeout timespan too large.");
+
+            if (distributionOptions.FragmentSize < 1L)
+                throw new ArgumentOutOfRangeException(nameof(distributionOptions.FragmentSize), distributionOptions.FragmentSize, "Fragment Size too small.");
+
+            if (distributionOptions.DesiredReplicas < 1L)
+                throw new ArgumentOutOfRangeException(nameof(distributionOptions.DesiredReplicas), distributionOptions.DesiredReplicas, "Desired Replica count too small.");
+
+            _timeoutTimeSpan = TimeSpan.FromMilliseconds(distributionOptions.Timeout);
+            _logger.LogInformation(eventId, $"Distribution Timeout Timespan: {distributionOptions.Timeout} ms.");
+
+            _fragmentSize = distributionOptions.FragmentSize;
+            _logger.LogInformation(eventId, $"Configured Fragment Size: {_fragmentSize}");
+
+            _desiredReplicas = distributionOptions.DesiredReplicas;
+            _logger.LogInformation(eventId, $"Configured Desired Replica Count: {_desiredReplicas}");
 
             _state = new IdleState();
             _WaitForStateChangesToIdleTask = new TaskCompletionSource<object?>();
@@ -508,6 +518,8 @@ namespace MyTorrent.DistributionServices
                     await TryPublishEventAndLogResultAsync(eventId,
                             new ClientJoinDeniedEvent(clientIdentifier, ClientJoinDeniedCode.WrongFragmentSize))
                         .ConfigureAwait(false);
+
+                    throw new OperationCanceledException("Client uses wrong fragment size.");
                 }
 
                 if (!clientJoinRequestedEvent.HashAlgorithm.Equals(_hashingServiceProvider.AlgorithmName,
@@ -516,6 +528,8 @@ namespace MyTorrent.DistributionServices
                     await TryPublishEventAndLogResultAsync(eventId,
                             new ClientJoinDeniedEvent(clientIdentifier, ClientJoinDeniedCode.WrongHashAlgorithm))
                         .ConfigureAwait(false);
+
+                    throw new OperationCanceledException("Client uses wrong hashing algorithm.");
                 }
 
                 if (_distributionMap.OverlapsEntpoint(clientJoinRequestedEvent.Endpoints))
@@ -524,9 +538,15 @@ namespace MyTorrent.DistributionServices
                             eventId,
                             new ClientJoinDeniedEvent(clientIdentifier, ClientJoinDeniedCode.EndpointConflict))
                         .ConfigureAwait(false);
+
+                    throw new OperationCanceledException("Client has conflicting endpoints.");
                 }
 
-                newState = new WaitForClientJoinResponseState(eventId, clientIdentifier, new ClientMetadata(clientJoinRequestedEvent.Endpoints, clientJoinRequestedEvent.StoredFragments.Keys));
+                newState = new WaitForClientJoinResponseState(
+                    eventId, 
+                    clientIdentifier, 
+                    new ClientMetadata(clientJoinRequestedEvent.Endpoints, clientJoinRequestedEvent.StoredFragments.Keys),
+                    _timeoutTimeSpan);
 
                 var addFileInfos = new Dictionary<string, FileMetadata>();
                 var addFragmentInfos = new Dictionary<string, FragmentMetadata>();
@@ -754,14 +774,11 @@ namespace MyTorrent.DistributionServices
             {
                 if (fragmentDistributionRequestedEvent.Hash.Equals(state.FragmentHash))
                 {
-                    if (state.Requestors.Count <= MinNeededRequestors) //else ignore event
-                    {
-                        state.Requestors.Add(clientIdentifier);
+                    state.Requestors.Add(clientIdentifier);
 #if DEBUG
-                        _logger.LogDebug(eventId, $"[{eventId.Id:X8}] Added Client ({clientIdentifier}) to requestor set.");
+                    _logger.LogDebug(eventId, $"[{eventId.Id:X8}] Added Client ({clientIdentifier}) to requestor set.");
 #endif
-                    }
-                    else
+                    if (state.Requestors.Count >= _desiredReplicas) //else ignore
                     {
                         await HandleFragmentDistributionAsyncCore(eventId, state);
                     }
@@ -798,8 +815,10 @@ namespace MyTorrent.DistributionServices
                         WaitForDistributionDeliveryResponseState newState = new WaitForDistributionDeliveryResponseState(
                             eventId, 
                             state.FragmentHash,
+                            state.FragmentSize,
                             state.Requestors,
-                            state.TaskCompletionSource);
+                            state.TaskCompletionSource,
+                            _timeoutTimeSpan);
 
                         _state = newState;
                         _ = newState.TimeoutTask.ContinueWith(HandleTimeoutAsync);
@@ -900,21 +919,22 @@ namespace MyTorrent.DistributionServices
         private async Task FinishDistributionAsync(EventId eventId, WaitForDistributionDeliveryResponseState state)
         {
 #if DEBUG
-                _logger.LogDebug(eventId, $"[{eventId.Id:X8}] Start deliveri");
+                _logger.LogDebug(eventId, $"[{eventId.Id:X8}] Start delivering fragment Data to ");
 #endif
             try
             {
                 if (state.ConfirmedRequestors.Count > 0)
                 {
+                    _distributionMap.TryAddFragmentInfo(state.FragmentHash, state.FragmentSize);
                     _distributionMap.TryAddFragmentToClients(state.FragmentHash, state.ConfirmedRequestors);
 
                     List<Uri> endpoints = new List<Uri>();
 
                     foreach (string clientId in state.ConfirmedRequestors)
                     {
-                        if (_distributionMap.TryGetClientInfo(clientId, out IClientInfo? clientinfo))
+                        if (_distributionMap.TryGetClientInfo(clientId, out IClientInfo? clientInfo))
                         {
-                            foreach (Uri clientEndpoint in clientinfo.Endpoints)
+                            foreach (Uri clientEndpoint in clientInfo.Endpoints)
                             {
                                 endpoints.Add(new Uri(clientEndpoint, state.FragmentHash));
                             }
@@ -931,6 +951,15 @@ namespace MyTorrent.DistributionServices
                     }
 
                     state.TaskCompletionSource.TrySetResult(endpoints);
+
+                    await TryPublishEventAndLogResultAsync(
+                        eventId, //This is the log event id not the id of the published event
+                        @event: new FragmentDistributionEndedEvent(
+                            state.FragmentHash,
+                            state.FragmentSize,
+                            state.ConfirmedRequestors),
+                        errorLogLevel: LogLevel.Error)
+                        .ConfigureAwait(false);
                 }
                 else
                 {
@@ -1384,7 +1413,8 @@ namespace MyTorrent.DistributionServices
                         eventId,
                         fragmentHash,
                         fragmentData,
-                        taskCompletionSource);
+                        taskCompletionSource,
+                        _timeoutTimeSpan);
 
                     _state = newState;
                     _WaitForStateChangesToIdleTask = new TaskCompletionSource<object?>();

@@ -46,9 +46,21 @@ namespace MyTorrent.DistributionServices
 
             mqttNetworkOptions.Host ??= MqttNetworkOptions.Default.Host!;
 
+            if (mqttNetworkOptions.Port < 0x0000)
+                throw new ArgumentOutOfRangeException(nameof(mqttNetworkOptions.Port), mqttNetworkOptions.Port, "Port number too small.");
+            else if (mqttNetworkOptions.Port > 0xffff)
+                throw new ArgumentOutOfRangeException(nameof(mqttNetworkOptions.Port), mqttNetworkOptions.Port, "Port number too large.");
+
+            if (mqttNetworkOptions.Timeout < 1)
+                throw new ArgumentOutOfRangeException(nameof(mqttNetworkOptions.Timeout), mqttNetworkOptions.Timeout, "Timeout timespan too small.");
+            else if (mqttNetworkOptions.Timeout > 99999)
+                throw new ArgumentOutOfRangeException(nameof(mqttNetworkOptions.Timeout), mqttNetworkOptions.Timeout, "Timeout timespan too large.");
+
+            _logger.LogInformation(eventId, $"MQTT Client Communication Timeout: {mqttNetworkOptions.Timeout} ms.");
+
             var clientOptionsBuilder = new MqttClientOptionsBuilder()
                 .WithClientId(ClientId)
-                .WithCommunicationTimeout(TimeSpan.FromSeconds(999999)) //FIXME: change for production
+                .WithCommunicationTimeout(TimeSpan.FromSeconds(60))
                 .WithTcpServer(mqttNetworkOptions.Host, mqttNetworkOptions.Port);
 
             _mqttClient = new MqttFactory().CreateMqttClient();

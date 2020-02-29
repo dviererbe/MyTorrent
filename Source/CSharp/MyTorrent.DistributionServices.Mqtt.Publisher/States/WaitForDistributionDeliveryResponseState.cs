@@ -17,21 +17,25 @@ namespace MyTorrent.DistributionServices
             public WaitForDistributionDeliveryResponseState(
                 EventId eventId, 
                 string fragmentHash,
+                long fragmentSize,
                 HashSet<string> requestors, 
-                TaskCompletionSource<IEnumerable<Uri>> taskCompletionSource)
+                TaskCompletionSource<IEnumerable<Uri>> taskCompletionSource,
+                TimeSpan timeoutTimeSpan)
             {
                 EventId = eventId;
 
                 TimeoutCancellationTokenSource = new CancellationTokenSource();
-                TimeoutTask = Task.Delay(TimeoutTimeSpan, TimeoutCancellationTokenSource.Token);
+                TimeoutTask = Task.Delay(timeoutTimeSpan, TimeoutCancellationTokenSource.Token);
 
                 TaskCompletionSource = taskCompletionSource;
 
                 FragmentHash = fragmentHash;
+                FragmentSize = fragmentSize;
 
                 OpenRequestors = requestors;
                 ConfirmedRequestors = new HashSet<string>();
             }
+
             public bool IsValid => true;
 
             public EventId EventId { get; }
@@ -42,6 +46,8 @@ namespace MyTorrent.DistributionServices
 
             public string FragmentHash { get; }
 
+            public long FragmentSize { get; }
+            
             public TaskCompletionSource<IEnumerable<Uri>> TaskCompletionSource { get; }
 
             public HashSet<string> OpenRequestors { get; }

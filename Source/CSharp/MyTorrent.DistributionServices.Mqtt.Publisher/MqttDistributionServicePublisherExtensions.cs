@@ -97,21 +97,21 @@ namespace MyTorrent.DistributionServices
 
                 IEventIdCreationSource eventIdCreationSource = serviceProvider.GetRequiredService<IEventIdCreationSource>();
 
-                if (mqttNetworkOptions.MqttBrokerType == MqttBrokerType.SelfHosted)
+                if (mqttNetworkOptions.BrokerType == BrokerType.SelfHosted)
                 {
                     ILogger<SelfHostedMqttBroker> logger = serviceProvider.GetRequiredService<ILogger<SelfHostedMqttBroker>>();
 
-                    return new SelfHostedMqttBroker(logger, eventIdCreationSource, mqttNetworkOptions.Port);
+                    return new SelfHostedMqttBroker(logger, eventIdCreationSource, mqttNetworkOptions.Port, mqttNetworkOptions.Timeout);
                 }
-                else if (mqttNetworkOptions.MqttBrokerType == MqttBrokerType.Remote)
+                else if (mqttNetworkOptions.BrokerType == BrokerType.Remote)
                 {
                     ILogger<RemoteMqttBroker> logger = serviceProvider.GetRequiredService<ILogger<RemoteMqttBroker>>();
 
-                    return new RemoteMqttBroker(logger, eventIdCreationSource, mqttNetworkOptions.Host ?? MqttNetworkOptions.Default.Host!, mqttNetworkOptions.Port);
+                    return new RemoteMqttBroker(logger, eventIdCreationSource, mqttNetworkOptions.Host ?? MqttNetworkOptions.Default.Host!, mqttNetworkOptions.Port, mqttNetworkOptions.Timeout);
                 }
                 else
                 {
-                    throw new InvalidOperationException("Unknown broker type: " + mqttNetworkOptions.MqttBrokerType);
+                    throw new InvalidOperationException("Unknown broker type: " + mqttNetworkOptions.BrokerType);
                 }
             });
 

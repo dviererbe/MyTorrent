@@ -25,7 +25,8 @@ namespace MyTorrent.DistributionServices
         public SelfHostedMqttBroker(
             ILogger<SelfHostedMqttBroker> logger,
             IEventIdCreationSource eventIdCreationSource,
-            int port)
+            int port,
+            int timeout)
         {
             _logger = logger;
             _eventIdCreationSource = eventIdCreationSource;
@@ -34,17 +35,29 @@ namespace MyTorrent.DistributionServices
 #if DEBUG
             _logger.LogDebug(eventId, "Creating Mqtt Server.");
 #endif
+            if (port < 0x0000)
+                throw new ArgumentOutOfRangeException(nameof(port), port, "Port number too small.");
+            else if (timeout > 0xffff)
+                throw new ArgumentOutOfRangeException(nameof(port), port, "Port number too large.");
+
+            if (timeout < 1)
+                throw new ArgumentOutOfRangeException(nameof(timeout), timeout, "Timeout timespan too small.");
+            else if (timeout > 99999)
+                throw new ArgumentOutOfRangeException(nameof(timeout), timeout, "Timeout timespan too large.");
+
+            _logger.LogInformation(eventId, $"MQTT Server Communication Timeout: {timeout} ms.");
 
             var serverOptionsBuilder = new MqttServerOptionsBuilder()
                 .WithClientId(ClientId)
                 .WithoutEncryptedEndpoint()
                 .WithConnectionBacklog(100)
+                .WithDefaultCommunicationTimeout(TimeSpan.FromMilliseconds(timeout))
                 .WithDefaultEndpointPort(port);
 
             _mqttServer = new MqttFactory().CreateMqttServer();
             _mqttServer.UseClientConnectedHandler(HandleClientConnectedAsync);
             _mqttServer.UseClientDisconnectedHandler(HandleClientDisconnectedAsync);
-            
+
             try
             {
                 _logger.LogInformation(eventId, $"Starting Mqtt-Server (mqtt://0.0.0.0:{port}).");
@@ -132,16 +145,20 @@ namespace MyTorrent.DistributionServices
             GC.SuppressFinalize(this);
         }
 
-        private async Task HandleClientConnectedAsync(MqttServerClientConnectedEventArgs eventArgs)
+        private Task HandleClientConnectedAsync(MqttServerClientConnectedEventArgs eventArgs)
         {
             EventId eventId = GetNextEventId();
             _logger.LogInformation(eventId, $"Client connected (Id: {eventArgs.ClientId})");
+
+            return Task.CompletedTask;
         }
 
-        private async Task HandleClientDisconnectedAsync(MqttServerClientDisconnectedEventArgs eventArgs)
+        private Task HandleClientDisconnectedAsync(MqttServerClientDisconnectedEventArgs eventArgs)
         {
             EventId eventId = GetNextEventId();
             _logger.LogInformation(eventId, $"Client disconnected (Id: {eventArgs.ClientId})");
+
+            return Task.CompletedTask;
         }
 
         protected virtual void Dispose(bool disposing)

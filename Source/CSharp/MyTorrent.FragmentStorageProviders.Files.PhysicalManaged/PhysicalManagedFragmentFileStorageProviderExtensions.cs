@@ -21,7 +21,7 @@ namespace MyTorrent.FragmentStorageProviders
         /// <returns>
         /// Returns <paramref name="services"/> after the operation has completed.
         /// </returns>
-        public static IServiceCollection ConfigureFragmentInMemoryStorageProvider(this IServiceCollection services, Action<PhysicalManagedFragmentFileStorageProviderOptions> setupAction)
+        public static IServiceCollection ConfigurePhysicalManagedFragmentFileStorageProvider(this IServiceCollection services, Action<PhysicalManagedFragmentFileStorageProviderOptions> setupAction)
         {
             return services.Configure<PhysicalManagedFragmentFileStorageProviderOptions>(setupAction);
         }
@@ -38,7 +38,7 @@ namespace MyTorrent.FragmentStorageProviders
         /// <returns>
         /// Returns <paramref name="services"/> after the operation has completed.
         /// </returns>
-        public static IServiceCollection ConfigureFragmentInMemoryStorageProvider(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection ConfigurePhysicalManagedFragmentFileStorageProvider(this IServiceCollection services, IConfiguration configuration)
         {
             return services.Configure<PhysicalManagedFragmentFileStorageProviderOptions>(configuration);
         }
@@ -52,7 +52,7 @@ namespace MyTorrent.FragmentStorageProviders
         /// <returns>
         /// Returns <paramref name="services"/> after the operation has completed.
         /// </returns>
-        public static IServiceCollection AddFragmentInMemoryStorageProvider(this IServiceCollection services)
+        public static IServiceCollection AddPhysicalManagedFragmentFileStorageProvider(this IServiceCollection services)
         {
             return services.AddSingleton<IFragmentStorageProvider, PhysicalManagedFragmentFileStorageProvider>();
         }

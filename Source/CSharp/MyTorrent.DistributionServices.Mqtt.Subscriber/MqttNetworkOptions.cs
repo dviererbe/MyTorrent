@@ -19,5 +19,10 @@
         /// Gets the host address of the remote mqtt broker the mqtt client should connect to.
         /// </summary>
         public string? Host { get; set; } = "localhost";
+
+        /// <summary>
+        /// Gets the timespan in millisecond how long the mqtt endpoint will wait for a QoS responses like PUBACK.
+        /// </summary>
+        public int Timeout { get; set; } = 2000;
     }
 }

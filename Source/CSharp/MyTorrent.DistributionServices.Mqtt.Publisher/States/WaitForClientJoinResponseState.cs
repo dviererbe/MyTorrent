@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -14,7 +15,7 @@ namespace MyTorrent.DistributionServices
         private class WaitForClientJoinResponseState : IMqttDistributionServicePublisherState
         {
             public WaitForClientJoinResponseState(
-                EventId eventId, string clientIdentifier, ClientMetadata clientMetadata)
+                EventId eventId, string clientIdentifier, ClientMetadata clientMetadata, TimeSpan timeoutTimeSpan)
             {
                 EventId = eventId;
 
@@ -27,7 +28,7 @@ namespace MyTorrent.DistributionServices
                 AddFragments = new Dictionary<string, FragmentMetadata>();
                 
                 TimeoutCancellationTokenSource = new CancellationTokenSource();
-                TimeoutTask = Task.Delay(TimeoutTimeSpan, TimeoutCancellationTokenSource.Token);
+                TimeoutTask = Task.Delay(timeoutTimeSpan, TimeoutCancellationTokenSource.Token);
             }
 
             public bool IsValid => true;

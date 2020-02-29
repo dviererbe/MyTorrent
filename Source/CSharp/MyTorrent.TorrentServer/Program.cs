@@ -9,6 +9,7 @@ using MyTorrent.HashingServiceProviders;
 using MyTorrent.TorrentServer.Services;
 using Serilog;
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -31,7 +32,7 @@ namespace MyTorrent.TorrentServer
             {
                 hostConfiguration.SetBasePath(Directory.GetCurrentDirectory());
                 hostConfiguration.AddJsonFile("hostsettings.json", optional: true);
-                hostConfiguration.AddEnvironmentVariables(prefix: "MYTORRENT-TRACKER_");
+                hostConfiguration.AddEnvironmentVariables(prefix: "MYTORRENT-TORRENT_");
                 hostConfiguration.AddCommandLine(args);
             }
 
@@ -39,7 +40,7 @@ namespace MyTorrent.TorrentServer
             {
                 appConfiguration.AddJsonFile("appsettings.json", optional: true);
                 appConfiguration.AddJsonFile($"appsettings.{hostContext.HostingEnvironment.EnvironmentName}.json", optional: true);
-                appConfiguration.AddEnvironmentVariables(prefix: "MYTORRENT-TRACKER_");
+                appConfiguration.AddEnvironmentVariables(prefix: "MYTORRENT-TORRENT_");
                 appConfiguration.AddCommandLine(args);
             }
 
@@ -52,20 +53,58 @@ namespace MyTorrent.TorrentServer
             {
                 IConfiguration configuration = hostContext.Configuration;
 
-                services.Configure<HostOptions>(option => option.ShutdownTimeout = TimeSpan.FromSeconds(20))
-                        .Configure<GrpcTorrentService>(configuration.GetSection("gRPC"))
-                        .ConfigureStandardHashingServiceProvider(configuration.GetSection("HashServiceProvider"))
-                        .ConfigureFragmentInMemoryStorageProvider(configuration.GetSection("Storage:InMemory"))
-                        .ConfigureDistributionStateJsonFile(configuration.GetSection("Distribution:PersistentState:Json"))
-                        .ConfigureMqttNetwork(configuration.GetSection("Distribution:Mqtt:Network"))
+                bool useInMemory = true;
+                IConfigurationSection section = configuration.GetSection("Storage:Type");
 
-                        .AddOptions()
-                        .AddEventIdCreationSourceCore()
-                        .AddStandardHashingServiceProvider()
-                        .AddFragmentInMemoryStorageProvider()
-                        .AddDistributionStateJsonFile()
-                        .AddMqttDistributionServiceSubscriber()
-                        .AddHostedService<GrpcTorrentService>();
+                if (section.Exists())
+                {
+                    string value = section.Value.Trim().ToLower();
+
+                    if (value.Equals("inmemory"))
+                    {
+                        useInMemory = true;
+                    }
+                    else if(value.Equals("file"))
+                    {
+                        useInMemory = false;
+                    }
+                    else
+                    {
+                        throw new ArgumentOutOfRangeException("Storage Provider Type", value, "Unknown Storage Provider Type");
+                    }
+                }
+
+                //Adding Configuration
+                /////////////////////////////////////////////
+
+                services.Configure<HostOptions>(option => option.ShutdownTimeout = TimeSpan.FromSeconds(20));
+                services.Configure<GrpcTorrentService>(configuration.GetSection("gRPC"));
+                services.ConfigureStandardHashingServiceProvider(configuration.GetSection("HashServiceProvider"));
+                services.ConfigureFragmentInMemoryStorageProvider(configuration.GetSection("Storage:InMemory"));
+                services.ConfigureVirtualManagedFragmentFileStorageProvider(configuration.GetSection("Storage:File"));
+                services.ConfigureDistributionStateJsonFile(configuration.GetSection("Distribution:PersistentState:Json"));
+                services.ConfigureMqttDistributionServiceSubscriber(configuration.GetSection("Distribution"));
+                services.ConfigureMqttNetwork(configuration.GetSection("Distribution:Mqtt:Network"));
+
+                //Adding Services
+                /////////////////////////////////////////////
+
+                services.AddOptions();
+                services.AddEventIdCreationSourceCore();
+                services.AddStandardHashingServiceProvider();
+                
+                if (useInMemory)
+                {
+                    services.AddFragmentInMemoryStorageProvider();
+                }
+                else
+                {
+                    services.AddVirtualManagedFragmentFileStorageProvider();
+                }
+
+                services.AddDistributionStateJsonFile();
+                services.AddMqttDistributionServiceSubscriber();
+                services.AddHostedService<GrpcTorrentService>();
             }
 
             return new HostBuilder()

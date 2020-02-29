@@ -5,9 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace MyTorrent.DistributionServices
 {
@@ -21,6 +23,7 @@ namespace MyTorrent.DistributionServices
         private readonly IFragmentStorageProvider _fragmentStorageProvider;
 
         private long? _fragmentSize;
+        private Uri[] _endpoints = Array.Empty<Uri>();
 
         private volatile bool _disposed = false;
 
@@ -53,7 +56,7 @@ namespace MyTorrent.DistributionServices
             var sha256 = HashAlgorithm.Create("SHA256");
             var inc = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
 
-            using (FileStream fs = new FileStream("C:\\Users\\Dominik.LIN-NET\\Downloads\\000.png", FileMode.Open, FileAccess.Read))
+            using (FileStream fs = new FileStream(@"C:\Users\Dominik.LIN-NET\Pictures\Test.png", FileMode.Open, FileAccess.Read))
             {
                 fileSize = fs.Length;
 
@@ -161,6 +164,12 @@ namespace MyTorrent.DistributionServices
                 EnsureStorageProviderWasNotDisposed();
                 return _fragmentStorageProvider;
             }
+        }
+
+        public async Task InitializeAsync(IEnumerable<Uri> endpoints)
+        {
+            EnsureStorageProviderWasNotDisposed();
+            _endpoints = endpoints.ToArray();
         }
 
         #region Helper Methods

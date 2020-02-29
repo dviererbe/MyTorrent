@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ConsumerProducerLocking;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MQTTnet;
 using MQTTnet.Client.Publishing;
 using MQTTnet.Client.Receiving;
@@ -24,11 +25,7 @@ namespace MyTorrent.DistributionServices
     /// </summary>
     public partial class MqttDistributionServiceSubscriber : IDistributionServiceSubscriber
     {
-#if DEBUG
-        private static readonly TimeSpan TimeoutTimeSpan = TimeSpan.FromSeconds(999999);
-#else
-        private static readonly TimeSpan timeoutTimeSpan = TimeSpan.FromSeconds(10);
-#endif
+        private readonly TimeSpan _timeoutTimeSpan;
 
         //TODO: replace by dependency injected random service.
         private static readonly Random RandomNumberGenerator = new Random();
@@ -52,7 +49,7 @@ namespace MyTorrent.DistributionServices
         private IMqttDistributionServiceSubscriberState _state = new InitializingState();
 
         private TaskCompletionSource<object?> _WaitForStateChangesToIdleTask;
-        
+
         /// <summary>
         /// Initializes a new <see cref="MqttDistributionServiceSubscriber"/> instance.
         /// </summary>
@@ -71,6 +68,9 @@ namespace MyTorrent.DistributionServices
         /// <param name="persistentDistributionState">
         /// TODO:
         /// </param>
+        /// <param name="options">
+        /// TODO:
+        /// </param>
         /// <param name="mqttEndpoint">
         /// The MQTT endpoint to publish and receive messages.
         /// </param>
@@ -80,7 +80,8 @@ namespace MyTorrent.DistributionServices
             IHashingServiceProvider hashingServiceProvider,
             IFragmentStorageProvider fragmentStorageProvider,
             IPersistentDistributionState persistentDistributionState,
-            IMqttEndpoint mqttEndpoint)
+            IMqttEndpoint mqttEndpoint,
+            IOptions<DistributionServiceSubscriberOptions>? options = null)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _eventIdCreationSource = eventIdCreationSource ?? throw new ArgumentNullException(nameof(eventIdCreationSource));
@@ -91,6 +92,11 @@ namespace MyTorrent.DistributionServices
 
             EventId eventId = GetNextEventId();
             _logger.LogInformation(eventId, "Initializing Mqtt Distribution-Service-Subscriber.");
+
+            int timeout = options?.Value?.Timeout ?? DistributionServiceSubscriberOptions.Default.Timeout;
+            _timeoutTimeSpan = TimeSpan.FromMilliseconds(timeout);
+            
+            _logger.LogInformation(eventId, $"Distribution Timeout Timespan: {timeout} ms.");
 
             _WaitForStateChangesToIdleTask = new TaskCompletionSource<object?>();
             _WaitForStateChangesToIdleTask.SetCanceled();
@@ -368,7 +374,7 @@ namespace MyTorrent.DistributionServices
 
             _distributionMap.TryAddClient(_mqttEndpoint.ClientId, _endpoints!, _fragmentStorageProvider.Fragments);
 
-            _state = new InitializingState();
+            _state = new InitializedState();
         }
 
         private async Task StartJoiningDistributionServiceAsync(EventId? eventId = default)
@@ -393,8 +399,8 @@ namespace MyTorrent.DistributionServices
                 knownFiles, storedFragments, _endpoints.ToHashSet(), _hashingServiceProvider.AlgorithmName, _fragmentSize);
 
             if (await TryPublishEventAndLogResultAsync(eventId.Value, clientJoinRequestedEvent, LogLevel.Error).ConfigureAwait(false))
-            {
-                WaitForJoinResponseState newState = new WaitForJoinResponseState(eventId.Value);
+            {   
+                WaitForJoinResponseState newState = new WaitForJoinResponseState(eventId.Value, _timeoutTimeSpan);
 
                 _state = newState;
                 _ = newState.TimeoutTask.ContinueWith(HandleTimeoutAsync);
@@ -431,10 +437,10 @@ namespace MyTorrent.DistributionServices
             return writeSession;
         }
 
-        private async Task HandleApplicationMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs eventArgs)
+        private Task HandleApplicationMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs eventArgs)
         {
             if (_state.IsInvalid)
-                return;
+                return Task.CompletedTask;
 
             EventId eventId = GetNextEventId();
 
@@ -468,6 +474,8 @@ namespace MyTorrent.DistributionServices
                 else if (topic.Equals(MqttTopics.ClientJoinDenied))
                     _ = HandleEventAsyncCore<ClientJoinDeniedEvent>(eventId, eventArgs.ClientId, eventArgs.ApplicationMessage.Payload, HandleClientJoinDeniedEventAsync).ConfigureAwait(false);
             }
+
+            return Task.CompletedTask;
         }
 
         private async Task HandleEventAsyncCore<TEventType>(
@@ -979,7 +987,7 @@ namespace MyTorrent.DistributionServices
                     if (wasEventSent)
                     {
                         WaitForFragmentDeliveryState newState = new WaitForFragmentDeliveryState(
-                            eventId, fragmentDistributionStartedEvent.Hash, fragmentDistributionStartedEvent.Size);
+                            eventId, fragmentDistributionStartedEvent.Hash, fragmentDistributionStartedEvent.Size, _timeoutTimeSpan);
 
                         _state = newState;
                         _WaitForStateChangesToIdleTask = new TaskCompletionSource<object?>();

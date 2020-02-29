@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\EventIdCreationSource.Core\EventIdCreationSource.Core.csproj" />
     <ProjectReference Include="..\MyTorrent.DistributionServices.Mqtt.Publisher\MyTorrent.DistributionServices.Mqtt.Publisher.csproj" />
+    <ProjectReference Include="..\MyTorrent.FragmentStorageProviders.Files.VirtualManaged\MyTorrent.FragmentStorageProviders.Files.VirtualManaged.csproj" />
     <ProjectReference Include="..\MyTorrent.FragmentStorageProviders.InMemory\MyTorrent.FragmentStorageProviders.InMemory.csproj" />
     <ProjectReference Include="..\MyTorrent.gRPC\MyTorrent.gRPC.csproj" />
     <ProjectReference Include="..\MyTorrent.HashingServiceProviders.Standard\MyTorrent.HashingServiceProviders.Standard.csproj" />

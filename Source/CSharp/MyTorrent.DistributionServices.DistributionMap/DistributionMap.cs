@@ -224,6 +224,12 @@ namespace MyTorrent.DistributionServices
             }
 
             _clients.Add(clientIdentifier, clientInfo);
+
+            foreach (Uri endpoint in endpoints)
+            {
+                _endpoints.Add(endpoint);
+            }
+
             return true;
         }
 
