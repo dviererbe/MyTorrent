@@ -3,17 +3,12 @@
     /// <summary>
     /// Configuration options for a <see cref="MqttDistributionServicePublisher"/> instance.
     /// </summary>
-    public class MqttDistributionServicePublisherOptions
+    public class DistributionServicePublisherOptions
     {
         /// <summary>
-        /// Default options for the <see cref="MqttDistributionServicePublisher"/>.
+        /// Default options for the <see cref="DistributionServicePublisherOptions"/>.
         /// </summary>
-        public static readonly MqttDistributionServicePublisherOptions Default = new MqttDistributionServicePublisherOptions();
-
-        /// <summary>
-        /// Port for the Mqtt Server where Mqtt clients can connect to.
-        /// </summary>
-        public int Port { get; set; } = 1809;
+        public static readonly DistributionServicePublisherOptions Default = new DistributionServicePublisherOptions();
 
         /// <summary>
         /// The maximum size a fragment is allowed to have.

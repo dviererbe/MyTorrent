@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:UserClient"
         mc:Ignorable="d"
-        Title="PseudoTorrentNetzwerk-Client" Height="450" Width="800">
+        Title="MainWindow" Height="450" Width="800">
 	<Grid Margin="2">
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="*"/>
@@ -33,17 +33,16 @@
 			</DataGrid>
 		</Grid>
 		<StackPanel Grid.Column ="2">
-			<StackPanel Orientation="Horizontal">
-				<Label Content="Trackerserver:   "/>
-				<TextBox x:Name="IP_TEXT" Text="127.0.0.1:50052"/>
-			</StackPanel> 
-			<Button Content="Bild zum Upload auswählen" Command="{Binding LoadPictureFromFile}"/>
+			<TextBox x:Name="IP_TEXT" Text="127.0.0.1:50052"/>
+			<Button Content="Bild laden" Command="{Binding LoadPictureFromFile}"/>
+			<Button Content="Bild laden2" Command="{Binding LoadPictureFromFile2}"/>
 			<Button Content="TorrentInfos aktualisieren" Click="UpdateNetworkInfo"/>
 			<Button Content="Bild im Torrentnetz speichern" Click="SaveFileToNetworkExecuteAsync"/>
 			<Button Content="Meine Bilder im Torrentnetz anzeigen" Click="LoadLocalNetworkFileInformation"/>
-			<Button Content="Gewählte Aktionen durchführen" Click="DownloadFilesFromTorrentNetwork"/>
-			<Button Content="Schließen" Click="Close"/>
-			<!--<Button Content="Splittest" Command="{Binding SplitTest}"/>-->
+			<Button Content="Gewählte Actionen durchführen" Click="DownloadFilesFromTorrentNetwork"/>
+			<Button Content="Bild lokal abspeichern" Command="{Binding SavePictureToFileSystem}"/>
+			<Button Content="Splittest" Command="{Binding SplitTest}"/>
+
 			<!--<ItemsControl ItemsSource="{Binding FileList}">
 			<ItemsControl.ItemTemplate>
 			<DataTemplate>

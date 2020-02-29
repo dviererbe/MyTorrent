@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>MyTorrent.DistributionServices</RootNamespace>
+    <DocumentationFile>..\docs\MyTorrent.DistributionServices.StandardDataTypes.JsonConverters.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" Version="4.7.0" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\MyTorrent.DistributionServices.StandardDataTypes\MyTorrent.DistributionServices.StandardDataTypes.csproj" />
+  </ItemGroup>
+
+</Project>

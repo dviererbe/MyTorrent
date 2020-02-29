@@ -7,7 +7,7 @@ using System.Text;
 
 namespace MyTorrent.FragmentStorageProviders.Tests
 {
-    public class PhysicalManagedFragmentFileStorageProviderTests : AbstractFragmentStorageProviderTests, IDisposable
+    class PhysicalManagedFragmentFileStorageProviderTests : AbstractFragmentStorageProviderTests, IDisposable
     {
         private const string TestFolderPath = "TESTS (CAN BE DELETED)/Physical";
 
@@ -48,7 +48,7 @@ namespace MyTorrent.FragmentStorageProviders.Tests
 
         public void Dispose()
         {
-            TimeSpan timeout = TimeSpan.FromSeconds(30);
+            TimeSpan timeout = TimeSpan.FromSeconds(5);
             DateTime started = DateTime.Now;
 
             try

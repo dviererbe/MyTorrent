@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MyTorrent.DistributionServices;
+using MyTorrent.DistributionServices.PersistentDistributionState;
 using MyTorrent.FragmentStorageProviders;
 using MyTorrent.HashingServiceProviders;
 using MyTorrent.TorrentServer.Services;
@@ -42,12 +43,12 @@ namespace MyTorrent.TorrentServer
                 appConfiguration.AddCommandLine(args);
             }
 
-            void ConfigureLogging(HostBuilderContext hostContext, LoggerConfiguration logging)
+            static void ConfigureLogging(HostBuilderContext hostContext, LoggerConfiguration logging)
             {
                 logging.ReadFrom.Configuration(hostContext.Configuration);
             }
 
-            void ConfigureServices(HostBuilderContext hostContext, IServiceCollection services)
+            static void ConfigureServices(HostBuilderContext hostContext, IServiceCollection services)
             {
                 IConfiguration configuration = hostContext.Configuration;
 
@@ -55,13 +56,15 @@ namespace MyTorrent.TorrentServer
                         .Configure<GrpcTorrentService>(configuration.GetSection("gRPC"))
                         .ConfigureStandardHashingServiceProvider(configuration.GetSection("HashServiceProvider"))
                         .ConfigureFragmentInMemoryStorageProvider(configuration.GetSection("Storage:InMemory"))
-                        .ConfigureMockDistributionServiceSubscriber(configuration.GetSection("Distrebution:Mock"))
+                        .ConfigureDistributionStateJsonFile(configuration.GetSection("Distribution:PersistentState:Json"))
+                        .ConfigureMqttNetwork(configuration.GetSection("Distribution:Mqtt:Network"))
 
                         .AddOptions()
                         .AddEventIdCreationSourceCore()
                         .AddStandardHashingServiceProvider()
                         .AddFragmentInMemoryStorageProvider()
-                        .AddMockDistributionServiceSubscriber()
+                        .AddDistributionStateJsonFile()
+                        .AddMqttDistributionServiceSubscriber()
                         .AddHostedService<GrpcTorrentService>();
             }
 

@@ -12,13 +12,14 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.1" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.1" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.1.1" />
-    <PackageReference Include="MQTTnet" Version="3.0.8" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ConsumerProducerLocking\ConsumerProducerLocking.csproj" />
     <ProjectReference Include="..\EventIdCreationSource.Abstractions\EventIdCreationSource.Abstractions.csproj" />
     <ProjectReference Include="..\MyTorrent.DistributionServices.Abstractions\MyTorrent.DistributionServices.Abstractions.csproj" />
     <ProjectReference Include="..\MyTorrent.DistributionServices.DistributionMap\MyTorrent.DistributionServices.DistributionMap.csproj" />
+    <ProjectReference Include="..\MyTorrent.DistributionServices.Mqtt.Internals\MyTorrent.DistributionServices.Mqtt.Internals.csproj" />
     <ProjectReference Include="..\MyTorrent.FragmentStorageProviders.Abstractions\MyTorrent.FragmentStorageProviders.Abstractions.csproj" />
     <ProjectReference Include="..\MyTorrent.HashingServiceProviders.Abstractions\MyTorrent.HashingServiceProviders.Abstractions.csproj" />
   </ItemGroup>

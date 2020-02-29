@@ -44,12 +44,12 @@ namespace MyTorrent.TrackerServer
                 appConfiguration.AddCommandLine(args);
             }
 
-            void ConfigureLogging(HostBuilderContext hostContext, LoggerConfiguration logging)
+            static void ConfigureLogging(HostBuilderContext hostContext, LoggerConfiguration logging)
             {
                 logging.ReadFrom.Configuration(hostContext.Configuration);
             }
 
-            void ConfigureServices(HostBuilderContext hostContext, IServiceCollection services)
+            static void ConfigureServices(HostBuilderContext hostContext, IServiceCollection services)
             {
                 IConfiguration configuration = hostContext.Configuration;
 
@@ -57,13 +57,14 @@ namespace MyTorrent.TrackerServer
                         .Configure<GrpcTrackerServiceOptions>(configuration.GetSection("gRPC"))
                         .ConfigureStandardHashingServiceProvider(configuration.GetSection("HashServiceProvider"))
                         .ConfigureFragmentInMemoryStorageProvider(configuration.GetSection("Storage:InMemory"))
-                        .ConfigureMockDistributionServicePublisher(configuration.GetSection("Distribution:Mock"))
+                        .ConfigureMqttNetwork(configuration.GetSection("Distribution:Mqtt:Network"))
+                        .ConfigureMqttNetwork(configuration.GetSection("Distribution"))
 
                         .AddOptions()
                         .AddEventIdCreationSourceCore()
                         .AddStandardHashingServiceProvider()
                         .AddFragmentInMemoryStorageProvider()
-                        .AddMockDistributionServicePublisher()
+                        .AddMqttDistributionServicePublisher()
                         .AddHostedService<GrpcTrackerService>();
             }
 

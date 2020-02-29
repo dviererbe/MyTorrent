@@ -461,7 +461,7 @@ namespace MyTorrent.TrackerServer.Services
                         }
 
                         fragmentOrder.Add(fragment.FragmentHash);
-                        bytesLeft -= data.Length;
+                        bytesLeft -= data.LongLength;
 
                         hashCalculator.AppendData(data);
                     }

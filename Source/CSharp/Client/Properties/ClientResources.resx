@@ -117,61 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Colon" xml:space="preserve">
-    <value>:</value>
-  </data>
-  <data name="Directory_Downloads" xml:space="preserve">
-    <value>/Downloads</value>
-  </data>
-  <data name="ErrorWhileDownload" xml:space="preserve">
-    <value>Beim Download ist ein Fehler aufgetreten. Eines Ihrer Datenpakete konnte nicht gefunden werden.</value>
-  </data>
-  <data name="ExtensionPNG" xml:space="preserve">
-    <value>.png</value>
-  </data>
-  <data name="File_SavedFilesXML" xml:space="preserve">
-    <value>savedfiles.xml</value>
-  </data>
   <data name="NetworkInfoFileName" xml:space="preserve">
     <value>networkinfo.xml</value>
   </data>
-  <data name="OtherError" xml:space="preserve">
-    <value>Other Error: </value>
-  </data>
-  <data name="Output_NoSavedFiles" xml:space="preserve">
-    <value>Sie haben noch keine Datein im Netzwerkgespeichert.</value>
-  </data>
-  <data name="Output_ReplaceFile1" xml:space="preserve">
-    <value>Die Datei </value>
-  </data>
-  <data name="Output_ReplaceFile2" xml:space="preserve">
-    <value> existiert bereits. Möchten Sie sie ersetzen?</value>
-  </data>
-  <data name="Output_ReplaceFileTitle" xml:space="preserve">
-    <value>Datei bereits vorhanden</value>
-  </data>
-  <data name="ReqFileNotFound" xml:space="preserve">
-    <value>Requested file was not found.</value>
-  </data>
-  <data name="ReqFragInvalidHash" xml:space="preserve">
-    <value>Requested fragment had invalid hash.</value>
-  </data>
-  <data name="ReqFragNotFound" xml:space="preserve">
-    <value>Requested fragment was not found.</value>
-  </data>
-  <data name="ReqFragOneNotFound" xml:space="preserve">
-    <value>One of fragments of the requested file was not found.</value>
-  </data>
-  <data name="ReqInternalError" xml:space="preserve">
-    <value>Torrentserver had internal error when fragment was requested.</value>
-  </data>
   <data name="SavedFilesInfoFileName" xml:space="preserve">
     <value>savedfiles.xml</value>
-  </data>
-  <data name="SemiColon" xml:space="preserve">
-    <value>; </value>
-  </data>
-  <data name="Slash" xml:space="preserve">
-    <value>/</value>
   </data>
 </root>

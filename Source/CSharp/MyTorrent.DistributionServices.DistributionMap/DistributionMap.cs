@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using System.Threading;
+using System.Runtime.CompilerServices;
 
 namespace MyTorrent.DistributionServices
 {
@@ -14,19 +12,16 @@ namespace MyTorrent.DistributionServices
     {
         private readonly HashSet<Uri> _endpoints;
         
-        private readonly Dictionary<string, Client> _clients;
+        private readonly Dictionary<string, ClientInfo> _clients;
         private readonly Dictionary<string, FragmentedFileInfo> _files;
         private readonly Dictionary<string, FragmentInfo> _fragments;
 
-        private readonly List<Client> _clientsSortedByDistributionRelevance;
+        private readonly List<ClientInfo> _clientsSortedByDistributionRelevance;
 
         /// <summary>
         /// Occurs when a new <see cref="FragmentedFileInfo"/> was added to this <see cref="DistributionMap"/>.
         /// </summary>
         public event Action<FragmentedFileInfo>? OnNewFragmentedFileInfoAdded;
-
-        private readonly object _writeLock = new object();
-        private readonly object _readLock = new object();
 
         /// <summary>
         /// Initializes a new <see cref="DistributionMap"/> instance.
@@ -34,11 +29,11 @@ namespace MyTorrent.DistributionServices
         public DistributionMap()
         {
             _endpoints = new HashSet<Uri>();
-            _clients = new Dictionary<string, Client>();
+            _clients = new Dictionary<string, ClientInfo>();
             _files = new Dictionary<string, FragmentedFileInfo>();
             _fragments = new Dictionary<string, FragmentInfo>();
             
-            _clientsSortedByDistributionRelevance = new List<Client>();
+            _clientsSortedByDistributionRelevance = new List<ClientInfo>();
         }
 
         /// <summary>
@@ -49,17 +44,17 @@ namespace MyTorrent.DistributionServices
         /// <summary>
         /// Gets the identifiers of the clients this <see cref="DistributionMap"/> contains.
         /// </summary>
-        public IReadOnlyCollection<IClient> Clients => _clients.Values;
+        public IReadOnlyCollection<IClientInfo> Clients => _clients.Values;
 
         /// <summary>
         /// Gets the hash values of the fragmented file this <see cref="DistributionMap"/> contains.
         /// </summary>
-        public IReadOnlyCollection<string> Files => _files.Keys;
+        public IReadOnlyCollection<FragmentedFileInfo> Files => _files.Values;
 
         /// <summary>
         /// Gets the hash values of the fragments this <see cref="DistributionMap"/> contains.
         /// </summary>
-        public IReadOnlyCollection<string> Fragments => _fragments.Keys;
+        public IReadOnlyCollection<IFragmentInfo> Fragments => _fragments.Values;
 
         /// <summary>
         /// Checks if the distribution map contains a client with a specific identifier.
@@ -73,10 +68,7 @@ namespace MyTorrent.DistributionServices
         /// </returns>
         public bool ContainsClient(string id)
         {
-            lock (this)
-            {
-                return _clients.ContainsKey(id); 
-            }
+            return _clients.ContainsKey(id);
         }
 
         /// <summary>
@@ -91,10 +83,7 @@ namespace MyTorrent.DistributionServices
         /// </returns>
         public bool ContainsFile(string fileHash)
         {
-            lock (_readLock)
-            {
-                return _files.ContainsKey(fileHash); 
-            }
+            return _files.ContainsKey(fileHash);
         }
 
         /// <summary>
@@ -109,10 +98,7 @@ namespace MyTorrent.DistributionServices
         /// </returns>
         public bool ContainsFragment(string fragmentHash)
         {
-            lock (_readLock)
-            {
-                return _fragments.ContainsKey(fragmentHash); 
-            }
+            return _fragments.ContainsKey(fragmentHash);
         }
 
         /// <summary>
@@ -132,42 +118,188 @@ namespace MyTorrent.DistributionServices
         /// </returns>
         public bool TryGetFragmentedFileInfo(string fileHash, [NotNullWhen(returnValue: true)] out FragmentedFileInfo? fileInfo)
         {
-            lock (_readLock)
-            {
-                return _files.TryGetValue(fileHash, out fileInfo); 
-            }
+            return _files.TryGetValue(fileHash, out fileInfo);     
         }
 
         /// <summary>
-        /// Tries to get all clients that stores a fragment with a specific hash value.
+        /// Tries to get the information about an fragment with a specific hash value.
         /// </summary>
         /// <param name="fragmentHash">
-        /// The hash value of the fragment to search for.
+        /// The hash value of the content of the fragment to get the information for.
         /// </param>
-        /// <param name="clients">
-        /// When this method returns, contains the enumeration of uris where the fragment with the 
-        /// specified <paramref name="fragmentHash"/> was distributed to, if the operation succeeded, or 
-        /// an empty array if the operation failed.
+        /// <param name="fragmentInfo">
+        /// When this method returns, contains the <see cref="FragmentInfo"/> about the fragment with the
+        /// specified <paramref name="fragmentHash"/>, if the operation succeeded, or <see langword="null"/> if the 
+        /// operation failed.
         /// </param>
         /// <returns>
         /// <see langword="true"/> if the distribution map contains a fragment with 
         /// the specified <paramref name="fragmentHash"/>; otherwise, <see langword="false"/>.
         /// </returns>
-        public bool TryGetClientsWithFragment(string fragmentHash, out IEnumerable<IClient> clients)
+        public bool TryGetFragmentInfo(string fragmentHash, [NotNullWhen(returnValue: true)] out IFragmentInfo? fragmentInfo)
         {
-            lock (_readLock)
+            if (_fragments.TryGetValue(fragmentHash, out FragmentInfo info))
             {
-                if (_fragments.TryGetValue(fragmentHash, out FragmentInfo fragmentInfo))
-                {
-                    var clientArray = new Client[fragmentInfo.FragmentOwner.Count];
-                    fragmentInfo.FragmentOwner.CopyTo(clientArray);
+                fragmentInfo = info;
+                return true;
+            }
 
-                    clients = clientArray;
-                    return true;
+            fragmentInfo = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Tries to get the information about an client with a specific identifier.
+        /// </summary>
+        /// <param name="clientId">
+        /// The identifier of the client to get the information for.
+        /// </param>
+        /// <param name="clientInfo">
+        /// When this method returns, contains the <see cref="ClientInfo"/> about the client with the
+        /// specified <paramref name="clientId"/>, if the operation succeeded, or <see langword="null"/> if the 
+        /// operation failed.
+        /// </param>
+        /// <returns>
+        /// <see langword="true"/> if the distribution map contains a client with 
+        /// the specified <paramref name="clientId"/>; otherwise, <see langword="false"/>.
+        /// </returns>
+        public bool TryGetClientInfo(string clientId, [NotNullWhen(returnValue: true)] out IClientInfo? clientInfo)
+        {
+            if (_clients.TryGetValue(clientId, out ClientInfo info))
+            {
+                clientInfo = info;
+                return true;
+            }
+
+            clientInfo = null;
+            return false;
+        }
+
+        public bool TryAddFileInfo(string fileHash, long fileSize, IEnumerable<string> fragmentHashSequence)
+        {
+            return _files.TryAdd(fileHash, new FragmentedFileInfo(fileHash, fileSize, fragmentHashSequence));
+        }
+
+        public bool TryAddFileInfo(IFragmentedFileInfo fileInfo)
+        {
+            if (fileInfo is FragmentedFileInfo fragmentedFileInfo)
+                return _files.TryAdd(fileInfo.Hash, fragmentedFileInfo);
+            else
+                return _files.TryAdd(fileInfo.Hash, new FragmentedFileInfo(fileInfo.Hash, fileInfo.Size, fileInfo.FragmentSequence));
+        }
+
+        public bool TryAddFileInfo(FragmentedFileInfo fileInfo)
+        {
+            return _files.TryAdd(fileInfo.Hash, fileInfo);
+        }
+        
+        public bool TryAddFragmentInfo(string fragmentHash, long fragmentSize)
+        {
+            return _fragments.TryAdd(fragmentHash, new FragmentInfo(fragmentHash, fragmentSize));
+        }
+
+        public bool TryAddFragmentInfo(FragmentInfo fragmentInfo)
+        {
+            return _fragments.TryAdd(fragmentInfo.Hash, fragmentInfo);
+        }
+
+        public bool TryAddClient(string clientIdentifier, IEnumerable<Uri> endpoints, IEnumerable<string> storedFragments)
+        {
+            if (_clients.ContainsKey(clientIdentifier))
+                return false;
+            
+            if (_endpoints.Overlaps(endpoints))
+                return false;
+
+            HashSet<string> fragments = new HashSet<string>(storedFragments);
+
+            ClientInfo clientInfo = new ClientInfo(clientIdentifier, endpoints, fragments);
+
+            foreach (string fragmentHash in fragments)
+            {
+                if (fragments.Add(fragmentHash) && _fragments.TryGetValue(fragmentHash, out FragmentInfo fragmentInfo))
+                {
+                    fragmentInfo._fragmentOwner.Add(clientIdentifier, clientInfo);
                 }
             }
 
-            clients = Array.Empty<IClient>();
+            _clients.Add(clientIdentifier, clientInfo);
+            return true;
+        }
+
+        public void TryAddFragmentToClient(string fragmentHash, string clientId)
+        {
+            if (_fragments.TryGetValue(fragmentHash, out FragmentInfo fragmentInfo))
+            {
+                if (_clients.TryGetValue(clientId, out ClientInfo clientInfo))
+                {
+                    fragmentInfo._fragmentOwner.TryAdd(clientId, clientInfo);
+                }
+            }
+        }
+
+        public void TryAddFragmentToClients(string fragmentHash, IEnumerable<string> clients)
+        {
+            if (_fragments.TryGetValue(fragmentHash, out FragmentInfo fragmentInfo))
+            {
+                foreach (string clientId in clients)
+                {
+                    if (_clients.TryGetValue(clientId, out ClientInfo clientInfo))
+                    {
+                        fragmentInfo._fragmentOwner.TryAdd(clientId, clientInfo);
+                    }
+                }
+            }
+        }
+
+        public bool OverlapsEntpoint(IEnumerable<Uri> uris)
+        {
+            return _endpoints.Overlaps(uris);
+        }
+
+        public bool RemoveFile(string fileHash)
+        {
+            return _files.Remove(fileHash);
+        }
+
+        public bool RemoveFragment(string fragmentHash)
+        {
+            if (_fragments.TryGetValue(fragmentHash, out FragmentInfo fragmentInfo))
+            {
+                foreach (ClientInfo fragmentOwner in fragmentInfo.FragmentOwner)
+                {
+                    fragmentOwner.RemoveFragment(fragmentHash);
+                }
+
+                _fragments.Remove(fragmentHash);
+            }
+
+            return false;
+        }
+
+        public bool RemoveClient(string clientId)
+        {
+            if (_clients.TryGetValue(clientId, out ClientInfo clientInfo))
+            {
+                foreach (string fragmentHash in clientInfo.Fragments)
+                {
+                    if (_fragments.TryGetValue(fragmentHash, out FragmentInfo fragmentInfo))
+                    {
+                        fragmentInfo._fragmentOwner.Remove(clientId);
+
+                        if (fragmentInfo._fragmentOwner.Count == 0)
+                            _fragments.Remove(fragmentHash);
+                    }
+                }
+
+                _endpoints.ExceptWith(clientInfo.Endpoints);
+
+                _clients.Remove(clientId);
+                _clientsSortedByDistributionRelevance.Remove(clientInfo);
+
+                return true;
+            }
+
             return false;
         }
 
@@ -176,17 +308,11 @@ namespace MyTorrent.DistributionServices
         /// </summary>
         public void Clear()
         {
-            lock (_writeLock)
-            {
-                lock (_readLock)
-                {
-                    _clients.Clear();
-                    _clientsSortedByDistributionRelevance.Clear();
-                    _endpoints.Clear();
-                    _fragments.Clear();
-                    _files.Clear();
-                }
-            }
+            _clients.Clear();
+            _clientsSortedByDistributionRelevance.Clear();
+            _endpoints.Clear();
+            _fragments.Clear();
+            _files.Clear();
         }
     }
 }

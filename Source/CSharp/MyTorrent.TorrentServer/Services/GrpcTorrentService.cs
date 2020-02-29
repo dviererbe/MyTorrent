@@ -12,6 +12,7 @@ using System.Linq;
 
 using static Utils.StringEqualsIgnoreCaseExtension;
 using MyTorrent.FragmentStorageProviders;
+using Google.Protobuf;
 
 namespace MyTorrent.TorrentServer.Services
 {
@@ -81,11 +82,20 @@ namespace MyTorrent.TorrentServer.Services
 
         private EventId GetNextEventId(string? name = null) => _eventIdCreationSource.GetNextId(name);
 
-        public Task StartAsync(CancellationToken cancellationToken)
+        public async Task StartAsync(CancellationToken cancellationToken)
         {
             EventId eventId = GetNextEventId();
 
             _logger.LogInformation(eventId, "StartAsync has been called.");
+
+            try
+            {
+                await _distributionService.InitializeAsync(_grpcServer.Ports.Select(port => new Uri($"tcp://{port.Host}:{port.Port}"))).ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                _logger.LogWarning(eventId, exception, "Error occured on distribution service initialization.");
+            }
 
             try
             {
@@ -107,10 +117,8 @@ namespace MyTorrent.TorrentServer.Services
             {
                 _logger.LogError(eventId, exception, "Failed to start gRPC Server.");
 
-                return Task.FromException(exception);
+                throw;
             }
-
-            return Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
@@ -190,17 +198,18 @@ namespace MyTorrent.TorrentServer.Services
 #if DEBUG
             _logger.LogDebug(eventId, $"'{context.Peer}' is downloading files.");
 #endif
-
             try
             {
 #if TRACE
-                _logger.LogTrace(eventId, $"'{context.Peer}' is requested fragment with hash: '{request.FragmentHash}'.");
+                _logger.LogTrace(eventId,
+                    $"'{context.Peer}' is requested fragment with hash: '{request.FragmentHash}'.");
 #endif
                 byte[] data = await storageProvider.GetFragmentAsync(request.FragmentHash);
 
-                FragmentDownloadResponse response = new FragmentDownloadResponse();
-        
-        response.Data = Google.Protobuf.ByteString.CopyFrom(data);
+                FragmentDownloadResponse response = new FragmentDownloadResponse
+                {
+                    Data = ByteString.CopyFrom(data)
+                };
 
                 return response;
             }
@@ -226,7 +235,7 @@ namespace MyTorrent.TorrentServer.Services
 
         public void Dispose()
         {
-            _distributionService.Dispose();
+            
         }
     }
 }

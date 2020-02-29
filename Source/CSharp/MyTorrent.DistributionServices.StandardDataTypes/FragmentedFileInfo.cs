@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define CREATE_DEFENSIVE_COPY_OF_FRAGMENT_SEQUENCE
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -26,13 +28,21 @@ namespace MyTorrent.DistributionServices
         /// Sequence of hash values of the fragments the file consists of. 
         /// The order of the hash values is relevant because it indicates how the fragmented file must be assembled.
         /// </param>
+        /// <exception cref="NullReferenceException">
+        /// Throws if <paramref name="fileHash"/>, <paramref name="fragmentSequence"/> or any element of <paramref name="fragmentSequence"/> is <see langword="null"/>.
+        /// </exception>
         public FragmentedFileInfo(string fileHash, long fileSize, IEnumerable<string> fragmentSequence)
         {
             Hash = fileHash;
             Size = fileSize;
-            FragmentSequence = fragmentSequence;
 
-            #region CalculateHashCode
+#if CREATE_DEFENSIVE_COPY_OF_FRAGMENT_SEQUENCE
+            FragmentSequence = fragmentSequence.ToArray();
+#else
+            FragmentSequence = fragmentSequence;
+#endif
+
+#region CalculateHashCode
             
             HashCode = 13;
 
@@ -45,11 +55,11 @@ namespace MyTorrent.DistributionServices
 
                 foreach (string fragmentHash in fragmentSequence)
                 {
-                    HashCode = (HashCode * 7) + Size.GetHashCode() + i++;
+                    HashCode = (HashCode * 7) + fragmentHash.GetHashCode() + i++;
                 }
             }
             
-            #endregion
+#endregion
         }
 
         /// <summary>
@@ -94,8 +104,12 @@ namespace MyTorrent.DistributionServices
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool Equals(object obj)
         {
-            if (obj == null)
+            //Paremeter "other" can theoretical not be null, because in the project is Nullable enabled, but
+            //projects, where nullable is not enabled can still call this function with null values.
+#pragma warning disable CS8625
+            if (obj is null)
                 return false;
+#pragma warning restore CS8625
 
             if (obj is IFragmentedFileInfo fileInfo)
                 return EqualsCore(this, fileInfo);
@@ -118,7 +132,7 @@ namespace MyTorrent.DistributionServices
             //Paremeter "other" can theoretical not be null, because in the project is Nullable enabled, but
             //projects, where nullable is not enabled can still call this function with null values.
 #pragma warning disable CS8625
-            if (other == null)
+            if (other is null)
                 return false;
 #pragma warning restore CS8625
 
@@ -137,8 +151,12 @@ namespace MyTorrent.DistributionServices
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(IFragmentedFileInfo other)
         {
-            if (other == null)
+            //Paremeter "other" can theoretical not be null, because in the project is Nullable enabled, but
+            //projects, where nullable is not enabled can still call this function with null values.
+#pragma warning disable CS8625
+            if (other is null)
                 return false;
+#pragma warning restore CS8625
 
             return EqualsCore(this, other);
         }
@@ -185,11 +203,11 @@ namespace MyTorrent.DistributionServices
             //projects, where nullable is not enabled can still call this function with null values.
 
 #pragma warning disable CS8625
-            if (fileInfo1 == null)
-                return fileInfo2 == null;
+            if (fileInfo1 is null)
+                return fileInfo2 is null;
             
-            if (fileInfo2 == null)
-                return fileInfo1 == null;
+            if (fileInfo2 is null)
+                return fileInfo1 is null;
 #pragma warning restore CS8625
 
             return EqualsCore(fileInfo1, fileInfo2);
@@ -213,12 +231,11 @@ namespace MyTorrent.DistributionServices
             //projects, where nullable is not enabled can still call this function with null values.
 
 #pragma warning disable CS8625
-            if (fileInfo1 == null)
+            if (fileInfo1 is null)
+                return !(fileInfo2 is null);
 
-                return fileInfo2 != null;
-
-            if (fileInfo2 == null)
-                return fileInfo1 != null;
+            if (fileInfo2 is null)
+                return !(fileInfo1 is null);
 #pragma warning restore CS8625
 
             return !EqualsCore(fileInfo1, fileInfo2);

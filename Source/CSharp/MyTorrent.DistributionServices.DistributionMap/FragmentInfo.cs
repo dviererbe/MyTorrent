@@ -2,20 +2,20 @@
 
 namespace MyTorrent.DistributionServices
 {
-    public class FragmentInfo
+    public class FragmentInfo : IFragmentInfo
     {
+        internal readonly Dictionary<string, ClientInfo> _fragmentOwner = new Dictionary<string, ClientInfo>();
+
         public FragmentInfo(string fragmentHash, long size)
         {
             Hash = fragmentHash;
             Size = size;
-
-            FragmentOwner = new HashSet<Client>();
         }
 
         public string Hash { get; }
 
         public long Size { get; }
 
-        internal HashSet<Client> FragmentOwner { get; }
+        public IEnumerable<IClientInfo> FragmentOwner => _fragmentOwner.Values;
     }
 }

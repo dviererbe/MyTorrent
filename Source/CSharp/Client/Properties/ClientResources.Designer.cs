@@ -61,51 +61,6 @@ namespace UserClient.Properties {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die : ähnelt.
-        /// </summary>
-        internal static string Colon {
-            get {
-                return ResourceManager.GetString("Colon", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die /Downloads ähnelt.
-        /// </summary>
-        internal static string Directory_Downloads {
-            get {
-                return ResourceManager.GetString("Directory_Downloads", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Beim Download ist ein Fehler aufgetreten. Eines Ihrer Datenpakete konnte nicht gefunden werden. ähnelt.
-        /// </summary>
-        internal static string ErrorWhileDownload {
-            get {
-                return ResourceManager.GetString("ErrorWhileDownload", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die .png ähnelt.
-        /// </summary>
-        internal static string ExtensionPNG {
-            get {
-                return ResourceManager.GetString("ExtensionPNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die savedfiles.xml ähnelt.
-        /// </summary>
-        internal static string File_SavedFilesXML {
-            get {
-                return ResourceManager.GetString("File_SavedFilesXML", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die networkinfo.xml ähnelt.
         /// </summary>
         internal static string NetworkInfoFileName {
@@ -115,119 +70,11 @@ namespace UserClient.Properties {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Other Error:  ähnelt.
-        /// </summary>
-        internal static string OtherError {
-            get {
-                return ResourceManager.GetString("OtherError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Sie haben noch keine Datein im Netzwerkgespeichert. ähnelt.
-        /// </summary>
-        internal static string Output_NoSavedFiles {
-            get {
-                return ResourceManager.GetString("Output_NoSavedFiles", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei  ähnelt.
-        /// </summary>
-        internal static string Output_ReplaceFile1 {
-            get {
-                return ResourceManager.GetString("Output_ReplaceFile1", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die  existiert bereits. Möchten Sie sie ersetzen? ähnelt.
-        /// </summary>
-        internal static string Output_ReplaceFile2 {
-            get {
-                return ResourceManager.GetString("Output_ReplaceFile2", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Datei bereits vorhanden ähnelt.
-        /// </summary>
-        internal static string Output_ReplaceFileTitle {
-            get {
-                return ResourceManager.GetString("Output_ReplaceFileTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Requested file was not found. ähnelt.
-        /// </summary>
-        internal static string ReqFileNotFound {
-            get {
-                return ResourceManager.GetString("ReqFileNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Requested fragment had invalid hash. ähnelt.
-        /// </summary>
-        internal static string ReqFragInvalidHash {
-            get {
-                return ResourceManager.GetString("ReqFragInvalidHash", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Requested fragment was not found. ähnelt.
-        /// </summary>
-        internal static string ReqFragNotFound {
-            get {
-                return ResourceManager.GetString("ReqFragNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die One of fragments of the requested file was not found. ähnelt.
-        /// </summary>
-        internal static string ReqFragOneNotFound {
-            get {
-                return ResourceManager.GetString("ReqFragOneNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Torrentserver had internal error when fragment was requested. ähnelt.
-        /// </summary>
-        internal static string ReqInternalError {
-            get {
-                return ResourceManager.GetString("ReqInternalError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die savedfiles.xml ähnelt.
         /// </summary>
         internal static string SavedFilesInfoFileName {
             get {
                 return ResourceManager.GetString("SavedFilesInfoFileName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die ;  ähnelt.
-        /// </summary>
-        internal static string SemiColon {
-            get {
-                return ResourceManager.GetString("SemiColon", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die / ähnelt.
-        /// </summary>
-        internal static string Slash {
-            get {
-                return ResourceManager.GetString("Slash", resourceCulture);
             }
         }
     }

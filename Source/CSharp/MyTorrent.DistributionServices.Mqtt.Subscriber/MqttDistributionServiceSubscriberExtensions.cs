@@ -10,24 +10,24 @@ namespace MyTorrent.DistributionServices
     public static class MqttDistributionServiceSubscriberExtensions
     {
         /// <summary>
-        /// Registers an action used to configure <see cref="MqttDistributionServiceSubscriberOptions"/>.
+        /// Registers an action used to configure <see cref="MqttNetworkOptions"/>.
         /// </summary>
         /// <param name="services">
         /// The <see cref="IServiceCollection"/> to add the <paramref name="setupAction"/> to.
         /// </param>
         /// <param name="setupAction">
-        /// The action used to to configure <see cref="MqttDistributionServiceSubscriberOptions"/>.
+        /// The action used to to configure <see cref="MqttNetworkOptions"/>.
         /// </param>
         /// <returns>
         /// Returns <paramref name="services"/> after the operation has completed.
         /// </returns>
-        public static IServiceCollection ConfigureMqttDistributionServiceSubscriber(this IServiceCollection services, Action<MqttDistributionServiceSubscriberOptions> setupAction)
+        public static IServiceCollection ConfigureMqttNetwork(this IServiceCollection services, Action<MqttNetworkOptions> setupAction)
         {
-            return services.Configure <MqttDistributionServiceSubscriberOptions>(setupAction);
+            return services.Configure<MqttNetworkOptions>(setupAction);
         }
 
         /// <summary>
-        /// Registers a <see cref="IConfiguration"/> instance wich <see cref="MqttDistributionServiceSubscriberOptions"/> will bind against.
+        /// Registers a <see cref="IConfiguration"/> instance wich <see cref="MqttNetworkOptions"/> will bind against.
         /// </summary>
         /// <param name="services">
         /// The <see cref="IServiceCollection"/> to add the configuration to.
@@ -38,9 +38,9 @@ namespace MyTorrent.DistributionServices
         /// <returns>
         /// Returns <paramref name="services"/> after the operation has completed.
         /// </returns>
-        public static IServiceCollection ConfigureMqttDistributionServiceSubscriber(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection ConfigureMqttNetwork(this IServiceCollection services, IConfiguration configuration)
         {
-            return services.Configure<MqttDistributionServiceSubscriberOptions>(configuration);
+            return services.Configure<MqttNetworkOptions>(configuration);
         }
 
         /// <summary>
@@ -54,7 +54,10 @@ namespace MyTorrent.DistributionServices
         /// </returns>
         public static IServiceCollection AddMqttDistributionServiceSubscriber(this IServiceCollection services)
         {
-            return services.AddSingleton<IDistributionServiceSubscriber, MqttDistributionServiceSubscriber>();
+            return services.AddSingleton<IMqttEndpoint, RemoteMqttBroker>()
+                           .AddSingleton<IDistributionServiceSubscriber, MqttDistributionServiceSubscriber>();
+
+            
         }
     }
 }

@@ -7,9 +7,6 @@ using System.Windows.Input;
 
 namespace UserClient
 {
-  /// <summary>
-  /// Implementation of ICommand as generic class with delegates
-  /// </summary>
   public class MyCommand : ICommand
   {
 	public event EventHandler CanExecuteChanged
@@ -37,9 +34,6 @@ namespace UserClient
 	}
   }
 
-  /// <summary>
-  /// Information class which holds the parameter for a successful communication with the network
-  /// </summary>
   public class NetworkInfo
   {
 	public long FragmentSize { get; set; }
@@ -47,9 +41,6 @@ namespace UserClient
 	public HashSet<string> TorrentList { get; set; }
   }
 
-  /// <summary>
-  /// Class which holds the information of one file that was uploaded to the network
-  /// </summary>
   public class SavedFileInfo
   {
 	public long FileSize { get; set; }
@@ -58,11 +49,12 @@ namespace UserClient
 	public DateTime CreateTime { get; set; }
   }
 
-  /// <summary>
-  /// Extension to <see cref="SavedFileInfo"/> to show the data in the data grid and apply choosen actions to the file.
-  /// </summary>
-  public class FileTableItem : SavedFileInfo
+  public class FileTableItem
   {
+	public long FileSize { get; set; }
+	public string FileHash { get; set; }
+	public string FileName { get; set; }
+	public DateTime CreateTime { get; set; }
 	public bool Download { get; set; }
 	public bool DeleteFromNetwork { get; set; }
   }

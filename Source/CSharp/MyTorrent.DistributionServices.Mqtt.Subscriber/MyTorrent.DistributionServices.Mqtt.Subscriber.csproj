@@ -15,9 +15,12 @@
   </ItemGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\ConsumerProducerLocking\ConsumerProducerLocking.csproj" />
     <ProjectReference Include="..\EventIdCreationSource.Abstractions\EventIdCreationSource.Abstractions.csproj" />
     <ProjectReference Include="..\MyTorrent.DistributionServices.Abstractions\MyTorrent.DistributionServices.Abstractions.csproj" />
     <ProjectReference Include="..\MyTorrent.DistributionServices.DistributionMap\MyTorrent.DistributionServices.DistributionMap.csproj" />
+    <ProjectReference Include="..\MyTorrent.DistributionServices.Mqtt.Internals\MyTorrent.DistributionServices.Mqtt.Internals.csproj" />
+    <ProjectReference Include="..\MyTorrent.DistributionServices.PersistentDistributionState.Abstractions\MyTorrent.DistributionServices.PersistentDistributionState.Abstractions.csproj" />
     <ProjectReference Include="..\MyTorrent.FragmentStorageProviders.Abstractions\MyTorrent.FragmentStorageProviders.Abstractions.csproj" />
     <ProjectReference Include="..\MyTorrent.HashingServiceProviders.Abstractions\MyTorrent.HashingServiceProviders.Abstractions.csproj" />
   </ItemGroup>

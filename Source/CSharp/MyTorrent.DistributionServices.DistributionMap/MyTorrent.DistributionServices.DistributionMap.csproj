@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MyTorrent.DistributionServices.Abstractions\MyTorrent.DistributionServices.Abstractions.csproj" />
+    <ProjectReference Include="..\MyTorrent.DistributionServices.StandardDataTypes\MyTorrent.DistributionServices.StandardDataTypes.csproj" />
   </ItemGroup>
 
 </Project>

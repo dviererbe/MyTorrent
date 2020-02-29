@@ -50,7 +50,7 @@ namespace MyTorrent.FragmentStorageProviders.Tests
 
         public void Dispose()
         {
-            TimeSpan timeout = TimeSpan.FromSeconds(30);
+            TimeSpan timeout = TimeSpan.FromSeconds(5);
             DateTime started = DateTime.Now;
 
             try

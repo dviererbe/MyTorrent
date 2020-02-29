@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>MyTorrent.DistributionServices.PersistentDistributionState</RootNamespace>
+    <DocumentationFile>..\docs\MyTorrent.DistributionServices.PersistentDistributionState.Abstractions.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MyTorrent.DistributionServices.Abstractions\MyTorrent.DistributionServices.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

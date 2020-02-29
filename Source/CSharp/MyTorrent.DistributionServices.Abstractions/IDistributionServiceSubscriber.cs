@@ -1,5 +1,7 @@
 ﻿using MyTorrent.FragmentStorageProviders;
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MyTorrent.DistributionServices
 {
@@ -18,5 +20,7 @@ namespace MyTorrent.DistributionServices
         /// This method was called after the <see cref="IDistributionServiceSubscriber"/> was disposed.
         /// </exception>
         public IFragmentStorageProvider FragmentStorage { get; }
+
+        public Task InitializeAsync(IEnumerable<Uri> endpoints);
     }
 }
